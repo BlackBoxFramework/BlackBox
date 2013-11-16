@@ -12,48 +12,22 @@ use \stdClass;
  */
 class Router
 {
+	/**
+	 * Getters & Setters
+	 */
+	use \Common\Traits\Mutators;
+
+	/**
+	 * Array of routes
+	 * @var array
+	 */
 	private $routes = [];
+
+	/**
+	 * Current route
+	 * @var array
+	 */
 	private $route 	= NULL;
-
-	private $currentRoute = '';
-
-	/**
-	 * Prevent arbitrary setting of object properties
-	 * @param string $name
-	 * @param mixed $value
-	 */
-	public function __set($name, $value)
-	{
-		return $this->propertyMethod('set', $name, $value);
-	}
-
-	/**
-	 * Prevent arbitrary access to object properties
-	 * @param  string $name
-	 * @return mixed
-	 */
-	public function __get($name)
-	{
-		return $this->propertyMethod('get', $name);
-	}
-
-	/**
-	 * Checks whether the property method exists.
-	 * @param  string $prefix
-	 * @param  string $name
-	 * @param  mixed $value
-	 * @return mixed
-	 */
-	private function propertyMethod($prefix, $name, $value = null)
-	{
-		$method = $prefix . ucfirst($name);
-
-		if (method_exists($this, $method)) {
-			return $this->$method($value);
-		} else {
-			trigger_error('Property method does not exist');
-		}
-	}
 
 	/**
 	 * Set the resolved route.
