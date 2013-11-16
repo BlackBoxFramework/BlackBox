@@ -45,7 +45,7 @@ if (!version_compare(PHP_VERSION, '5.5.0', '>=')) {
 }
 
 // PHP Extension Check
-if(!empty($extensions = array_diff([], get_loaded_extensions()))) {
+if(!empty($extensions = array_diff(['mongo'], get_loaded_extensions()))) {
     throw new Exception('The following PHP extensions must be enabled : ' . implode(', ', $extensions), 1);
 } else {
     unset($extensions);
@@ -65,7 +65,8 @@ Autoloader::register([__DIR__,
                       PROJECT_DIR,
                       FILTER_DIR, 
                       MODEL_DIR,
-                      TEMPLATE_DIR]);
+                      TEMPLATE_DIR,
+                      CACHE_DIR]);
 
 // Load Configuration File
 if (is_readable(PROJECT_DIR . '/config.json')) {
@@ -98,6 +99,10 @@ if ((isset($_SERVER['HTTP_HOST']) && $config->$_SERVER['HTTP_HOST']->debug) ||
 
 // Load singletons
 $objectContainer = ObjectContainer::getInstance();
+
+// Load objects into IoC
+ObjectContainer::setObject('MongoClient', new MongoClient());
+ObjectContainer::setObject('MongoDatabase', ObjectContainer::getObject('MongoClient')->blackbox);
 
 // Load the correct service (e.g. CLI, API or Web)
 if (PHP_SAPI == 'cli') {

@@ -13,6 +13,7 @@ class BlackBoxException
 	extends Exception
 {
 	const FILTER_IMPLEMENTATION = 'There was a problem implementing the following class ; {class}. Please read the documentation carefully.';
+	const MODEL_IMPLEMENTATION = 'There was a problem implementing the following class ; {class}. Please read the documentation carefully.';
 
 	public function __construct($message, array $context = [], Exception $previous = NULL)
 	{
