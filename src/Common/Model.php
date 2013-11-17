@@ -13,27 +13,26 @@ abstract class Model
 	Implements \Common\ModelInterface
 {
 	protected static $table 	= null;
-	protected static $variables = [];
 	protected static $indexes 	= [];
+	protected $variables = [];
 
 	final public static function find(array $query) 
 	{
 		// Variables
 		$database 	= ObjectContainer::getObject('MongoDatabase');
-		$model 		= get_called_class();
 
 		if (!is_null(static::$table)) {
 			$cursor = $database->{static::$table}->find($query);
 
-			$models = [];
+			$models = new Collection();
 
 			foreach ($cursor as $data) {
 				if (!is_null($data)) {
-					$models[] = new $model($data);
+					$models[] = new static($data);
 				}			
 			}
 
-			return new Collection($models);
+			return $models;
 		}
 	}
 
@@ -83,21 +82,21 @@ abstract class Model
 
 	public function __get($name)
 	{
-		if (is_string($name) && isset(static::$variables[$name])) {
-			return static::$variables[$name];
+		if (is_string($name) && isset($this->variables[$name])) {
+			return $this->variables[$name];
 		}
 	}
 
 	public function __set($name, $value)
 	{
 		if (is_string($name)) {
-			static::$variables[$name] = $value;
+			$this->variables[$name] = $value;
 		}
 	}
 
 	public function __isset($name)
 	{
-		if (is_string($name) && isset(static::$variables[$name])) {
+		if (is_string($name) && isset($this->variables[$name])) {
 			return true;
 		}
 	}

@@ -9,7 +9,7 @@ class Collection
 
 	private $position = 0;
 
-	public function __construct(array $collection) {
+	public function __construct(array $collection = []) {
 		$this->collection = $collection;
 	}
 
