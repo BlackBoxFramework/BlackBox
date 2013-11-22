@@ -36,23 +36,6 @@ abstract class Model
 		}
 	}
 
-	final public static function findOne(array $query) 
-	{
-		// Variables
-		$database 	= ObjectContainer::getObject('MongoDatabase');
-		$model 		= get_called_class();
-
-		if (!is_null(static::$table)) {
-			$data = $database->{static::$table}->findOne($query);
-
-			if (!is_null($data)) {
-				return new $model($data);
-			} else {
-				return false;
-			}
-		}
-	}
-
 	final public function save()
 	{
 		// Variables
