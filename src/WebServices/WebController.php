@@ -14,13 +14,9 @@ use WebServices\Exceptions\HaltException;
  * load applicable `filters` and `models` into the view.
  *
  * @author James Pegg <jamescpegg@gmail.com>
- * 
- * @todo  Support for `filters`
- * @todo  Support for `models`
- * @todo  Support for templating
- * @todo  Support for caching (presumably in memory)
  */
 class WebController
+	extends \Common\Event
 	implements \Common\ServiceInterface
 {
 
@@ -62,7 +58,7 @@ class WebController
 		$route 		= $this->resolveRequest(REQUEST_URI);
 		$filters 	= $this->loadFilters($route);
 		$models 	= $this->loadModels($route);
-		$view 		= $this->makeView($route, $models);
+		$view 		= $this->makeView($route, $models, $filters);
 
 		$view->show();
 	}
@@ -84,6 +80,10 @@ class WebController
 		if (!$route = $router->resolve($request)) {
 			throw new HaltException(HaltException::NOTFOUND);
 		} else {
+
+			// Trigger Event
+			$this->trigger('route.resolved');
+
 			return $route;
 		}
 	}
@@ -106,7 +106,14 @@ class WebController
 					throw new BlackBoxException(BlackBoxException::FILTER_IMPLEMENTATION, ['class' => $filter]);
 				}
 
-				$filters[] = new $filter();
+				// Instantiate Filter
+				$filter = new $filter();
+
+				// Boot the filter
+				$filter->boot();
+
+				// Make filter accesible to view
+				$filters[] = $filter;
 			}	
 		}
 
@@ -118,8 +125,6 @@ class WebController
 	 * @param  stdClass $route
 	 * @return array
 	 * @throws BlackBoxException If a model does not extend abstract Model class
-	 *
-	 * @todo  This is currently a proof of concept and isn't much use until we have a ORM
 	 */
 	private function loadModels(\stdClass $route)
 	{
@@ -182,13 +187,15 @@ class WebController
 	 * Load the route template
 	 * @param  stdClass $route
 	 * @throws HaltException If template doesn't exist
-	 *
-	 * @todo  Create a View class and use that instead.
 	 */
-	private function makeView(\stdClass $route, array $models)
+	private function makeView(\stdClass $route, array $models, array $filters)
 	{
 		if (isset($route->template)) {
-			return new View($route->template, $models);
+
+			// Trigger Event
+			$this->trigger('view.show', [$route->template]);
+
+			return new View($route->template, $models + $filters);
 		}
 	}
 
