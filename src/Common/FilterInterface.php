@@ -9,5 +9,5 @@ namespace Common;
  */
 interface FilterInterface
 {
-
+	public function boot();
 }
