@@ -10,7 +10,6 @@ use Common\Collection;
  * @author James Pegg <jamescpegg@gmail.com>
  */
 abstract class Model
-	Implements \Common\ModelInterface
 {
 	protected static $table 	= null;
 	protected static $indexes 	= [];

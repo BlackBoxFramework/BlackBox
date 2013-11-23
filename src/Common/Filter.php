@@ -9,7 +9,6 @@ namespace Common;
  */
 abstract class Filter
 	extends \Common\Event
-	Implements \Common\FilterInterface
 {
-
+	abstract public function boot();
 }
