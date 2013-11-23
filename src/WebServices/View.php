@@ -54,11 +54,11 @@ class View
 
 			$cache = new Cache($this->template, filemtime($template));
 
-			//if (!isset($cache->content)) {
+			if (!isset($cache->content)) {
 				$compiler = new Compiler($cache);
 
 				$cache->content = $compiler->parse(file_get_contents($template));
-			//}
+			}
 
 			require $cache->path;
 		} else {
