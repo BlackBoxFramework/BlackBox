@@ -31,7 +31,7 @@ class ObjectContainer
 		if (isset(self::$objects[$name])) {
 			return self::$objects[$name];
 		} else {
-			throw new \Exception('Object is not stored', 1);
+			throw new \Exception("Object {$name} is not available", 1);
 		}
 	}
 
