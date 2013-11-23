@@ -45,7 +45,7 @@ if (!version_compare(PHP_VERSION, '5.5.0', '>=')) {
 }
 
 // PHP Extension Check
-if(!empty($extensions = array_diff(['mongo'], get_loaded_extensions()))) {
+if(!empty($extensions = array_diff([], get_loaded_extensions()))) {
     throw new Exception('The following PHP extensions must be enabled : ' . implode(', ', $extensions), 1);
 } else {
     unset($extensions);
@@ -100,9 +100,22 @@ if ((isset($_SERVER['HTTP_HOST']) && $config->$_SERVER['HTTP_HOST']->debug) ||
 // Load singletons
 $objectContainer = ObjectContainer::getInstance();
 
-// Load objects into IoC
-ObjectContainer::setObject('MongoClient', new MongoClient());
-ObjectContainer::setObject('MongoDatabase', ObjectContainer::getObject('MongoClient')->blackbox);
+// Load MongoDB
+if (extension_loaded('mongo')) {
+
+    // Establish Connection
+    $MongoClient = new MongoClient();
+
+    // Select Database
+    $MongoDatabase = $MongoClient->{$config->default->mongo_db};
+
+    // Authenticate Connection
+    $MongoDatabase->authenticate($config->default->mongo_user,
+                                 $config->default->mongo_pwd);
+
+    // Make the database available
+    ObjectContainer::setObject('MongoDatabase', $MongoDatabase);
+}
 
 // Load the correct service (e.g. CLI, API or Web)
 if (PHP_SAPI == 'cli') {

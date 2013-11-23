@@ -6,6 +6,8 @@ class Collection
 	extends \ArrayIterator
 {
 
+	// Stack Modification
+
 	/**
 	 * Returns the first item
 	 * @return mixed

@@ -15,10 +15,15 @@ abstract class Model
 	protected static $indexes 	= [];
 	protected $variables = [];
 
+	final private static function connection()
+	{
+		return ObjectContainer::getObject('MongoDatabase');
+	}
+
 	final public static function find(array $query) 
 	{
 		// Variables
-		$database 	= ObjectContainer::getObject('MongoDatabase');
+		$database = self::connection();
 
 		if (!is_null(static::$table)) {
 			$cursor = $database->{static::$table}->find($query);
@@ -38,7 +43,7 @@ abstract class Model
 	final public function save()
 	{
 		// Variables
-		$database 	= ObjectContainer::getObject('MongoDatabase');
+		$database = self::connection();
 
 		if (!is_null(static::$table)) {
 			$database->{static::$table}->save(self::$variables);
@@ -48,7 +53,7 @@ abstract class Model
 	final public function delete()
 	{
 		// Variables
-		$database 	= ObjectContainer::getObject('MongoDatabase');
+		$database = self::connection();
 
 		if (!is_null(static::$table) && isset($this->_id)) {
 			$database->{static::$table}->remove(['_id' => $this->_id]);
