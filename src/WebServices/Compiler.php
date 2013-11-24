@@ -41,10 +41,10 @@ class Compiler
 	 */
 	private $methods = [
 							'define' 		=> '#{define\((?P<variable>\w+), (?P<value>.*)\)}#',
-							'foreach'		=> '#{foreach (?P<iterable>\w+) as (?P<variable>\w+)}(?P<contents>.*){/foreach}#s',
+							'foreach'		=> '#{foreach (?P<iterable>\w+) as (?P<variable>\w+)}(?P<contents>.*?){/foreach}#s',
 							'echoEscape' 	=> '#{{{(?P<variable>.*)}}}#',
 							'echo'			=> '#{{(?P<variable>.*)}}#',
-							'section'		=> '#{section\((?P<section>\w+)\)}(?P<content>.*){/section}#s',
+							'section'		=> '#{section\((?P<section>\w+)\)}(?P<content>.*?){/section}#s',
 							'yield'			=> '#{yield\((?P<section>\w+)\)}#',
 							'extends'		=> '#{extends\((?P<template>.*)\)}#'
 						];
@@ -137,7 +137,7 @@ class Compiler
 	 */
 	public function sectionCallback($matches)
 	{
-		$this->section[$matches['section']] = $matches['content'];
+		$this->section[$matches['section']] = $this->parse($matches['content']);
 
 		return '';
 	}
