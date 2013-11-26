@@ -179,7 +179,7 @@ class Cache
 		foreach ($dependencies as $file => $timestamp) {
 
 			// This is a template dependency, so check modified time of template
-			if (dirname($file) == TEMPLATE_DIR && filemtime($file) != $timestamp) {
+			if (strpos(dirname($file), TEMPLATE_DIR) === 0 && filemtime($file) != $timestamp) {
 				return false;
 			}
 		}
