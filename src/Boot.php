@@ -36,8 +36,8 @@ use WebServices\WebController;
  */
 
 // Load common functions and global definitions
-require 'Common\\Functions.php';
-require 'Globals.php';
+require dirname(__FILE__) . '\\Common\\Functions.php';
+require dirname(__FILE__) . '\\Globals.php';
 
 // PHP Version Check
 if (!version_compare(PHP_VERSION, '5.5.0', '>=')) {
@@ -59,7 +59,7 @@ if (!is_readable(FILTER_DIR) ||
 }
 
 // Autoloader Setup
-require 'Common\\Autoloader.php';
+require dirname(__FILE__) . '\\Common\\Autoloader.php';
 Autoloader::register([__DIR__, 
                       __DIR__ . DIRECTORY_SEPARATOR . 'Alias',
                       PROJECT_DIR,
