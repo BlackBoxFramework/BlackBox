@@ -36,8 +36,8 @@ use WebServices\WebController;
  */
 
 // Load common functions and global definitions
-require dirname(__FILE__) . '\\Common\\Functions.php';
-require dirname(__FILE__) . '\\Globals.php';
+require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Common' . DIRECTORY_SEPARATOR . 'Functions.php';
+require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Globals.php';
 
 // PHP Version Check
 if (!version_compare(PHP_VERSION, '5.5.0', '>=')) {
@@ -59,7 +59,7 @@ if (!is_readable(FILTER_DIR) ||
 }
 
 // Autoloader Setup
-require dirname(__FILE__) . '\\Common\\Autoloader.php';
+require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Common' . DIRECTORY_SEPARATOR . 'Autoloader.php';
 Autoloader::register([__DIR__, 
                       __DIR__ . DIRECTORY_SEPARATOR . 'Alias',
                       PROJECT_DIR,
@@ -70,14 +70,14 @@ Autoloader::register([__DIR__,
 
 // Load Configuration File
 if (is_readable(PROJECT_DIR . '/config.json')) {
-    $config = json_get_contents('/config.json', true);
+    $config = json_get_contents(PROJECT_DIR . '/config.json', true);
 } else {
     throw new Exception('Configuration file either does not exist or is not readable.', 1);
 }
 
 // Loader Routes Filer
 if (is_readable(PROJECT_DIR . '/routes.json')) {
-    $routes = json_get_contents('/routes.json', true);
+    $routes = json_get_contents(PROJECT_DIR . '/routes.json', true);
 } else {
     throw new Exception('Routes file either does not exist or is not readable', 1);
 }
