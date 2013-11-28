@@ -1,6 +1,6 @@
 <?php
 
-class Filter
+abstract class Filter
 	Extends \Common\Filter
 {
 

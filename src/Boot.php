@@ -36,8 +36,8 @@ use WebServices\WebController;
  */
 
 // Load common functions and global definitions
-require 'Common\\Functions.php';
-require 'Globals.php';
+require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Common' . DIRECTORY_SEPARATOR . 'Functions.php';
+require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Globals.php';
 
 // PHP Version Check
 if (!version_compare(PHP_VERSION, '5.5.0', '>=')) {
@@ -59,24 +59,25 @@ if (!is_readable(FILTER_DIR) ||
 }
 
 // Autoloader Setup
-require 'Common\\Autoloader.php';
+require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Common' . DIRECTORY_SEPARATOR . 'Autoloader.php';
 Autoloader::register([__DIR__, 
                       __DIR__ . DIRECTORY_SEPARATOR . 'Alias',
                       PROJECT_DIR,
                       FILTER_DIR, 
                       MODEL_DIR,
-                      TEMPLATE_DIR]);
+                      TEMPLATE_DIR,
+                      CACHE_DIR]);
 
 // Load Configuration File
 if (is_readable(PROJECT_DIR . '/config.json')) {
-    $config = json_get_contents('/config.json', true);
+    $config = json_get_contents(PROJECT_DIR . '/config.json', true);
 } else {
     throw new Exception('Configuration file either does not exist or is not readable.', 1);
 }
 
 // Loader Routes Filer
 if (is_readable(PROJECT_DIR . '/routes.json')) {
-    $routes = json_get_contents('/routes.json', true);
+    $routes = json_get_contents(PROJECT_DIR . '/routes.json', true);
 } else {
     throw new Exception('Routes file either does not exist or is not readable', 1);
 }
@@ -98,6 +99,23 @@ if ((isset($_SERVER['HTTP_HOST']) && $config->$_SERVER['HTTP_HOST']->debug) ||
 
 // Load singletons
 $objectContainer = ObjectContainer::getInstance();
+
+// Load MongoDB
+if (extension_loaded('mongo')) {
+
+    // Establish Connection
+    $MongoClient = new MongoClient();
+
+    // Select Database
+    $MongoDatabase = $MongoClient->{$config->default->mongo_db};
+
+    // Authenticate Connection
+    $MongoDatabase->authenticate($config->default->mongo_user,
+                                 $config->default->mongo_pwd);
+
+    // Make the database available
+    ObjectContainer::setObject('MongoDatabase', $MongoDatabase);
+}
 
 // Load the correct service (e.g. CLI, API or Web)
 if (PHP_SAPI == 'cli') {

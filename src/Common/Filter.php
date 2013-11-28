@@ -8,7 +8,7 @@ namespace Common;
  * @author James Pegg <jamescpegg@gmail.com>
  */
 abstract class Filter
-	Implements \Common\FilterInterface
+	extends \Common\Event
 {
-
+	abstract public function boot();
 }

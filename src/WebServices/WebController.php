@@ -4,6 +4,7 @@ namespace WebServices;
 
 use Common\Exceptions\BlackBoxException;
 use WebServices\Route;
+use WebServices\View;
 use WebServices\Exceptions\HaltException;
 
 /**
@@ -13,13 +14,9 @@ use WebServices\Exceptions\HaltException;
  * load applicable `filters` and `models` into the view.
  *
  * @author James Pegg <jamescpegg@gmail.com>
- * 
- * @todo  Support for `filters`
- * @todo  Support for `models`
- * @todo  Support for templating
- * @todo  Support for caching (presumably in memory)
  */
 class WebController
+	extends \Common\Event
 	implements \Common\ServiceInterface
 {
 
@@ -60,8 +57,10 @@ class WebController
 	{
 		$route 		= $this->resolveRequest(REQUEST_URI);
 		$filters 	= $this->loadFilters($route);
-		//$models 	= $this->loadModels($route);
-		$view 		= $this->makeView($route);
+		$models 	= $this->loadModels($route);
+		$view 		= $this->makeView($route, $models, $filters);
+
+		$view->show();
 	}
 
 	/**
@@ -81,6 +80,10 @@ class WebController
 		if (!$route = $router->resolve($request)) {
 			throw new HaltException(HaltException::NOTFOUND);
 		} else {
+
+			// Trigger Event
+			$this->trigger('route.resolved');
+
 			return $route;
 		}
 	}
@@ -103,7 +106,14 @@ class WebController
 					throw new BlackBoxException(BlackBoxException::FILTER_IMPLEMENTATION, ['class' => $filter]);
 				}
 
-				$filters[] = new $filter();
+				// Instantiate Filter
+				$filter = new $filter();
+
+				// Boot the filter
+				$filter->boot();
+
+				// Make filter accesible to view
+				$filters[] = $filter;
 			}	
 		}
 
@@ -115,8 +125,6 @@ class WebController
 	 * @param  stdClass $route
 	 * @return array
 	 * @throws BlackBoxException If a model does not extend abstract Model class
-	 *
-	 * @todo  This is currently a proof of concept and isn't much use until we have a ORM
 	 */
 	private function loadModels(\stdClass $route)
 	{
@@ -125,8 +133,22 @@ class WebController
 		if (isset($route->models)) {
 			foreach ($route->models as $model) {
 
+				// Modifiers
+				$modifiers = [];
+				$pattern = '#\.(\w+)*#';
+
+				preg_match_all($pattern, $model, $modifiers);
+
+				if (!empty($modifiers)) {
+					$model = str_replace($modifiers[0] , '', $model);
+					unset($modifiers[0]);
+				}
+
+				$modifiers = $modifiers[1];
+
+				// Variables
 				$variables = [];
-				$pattern = '#^(?P<model>\w+)*\((\w+)(,\w+)*\)$#';
+				$pattern = '#^(?P<model>\w+)*\((\w+)(,\w+)*\)#';
 				
 				preg_match($pattern, $model, $matches);
 
@@ -142,16 +164,22 @@ class WebController
 					}
 				}
 
-				$model = ucfirst(strtolower($model)) . 'Model';
+				$class = ucfirst(strtolower($model)) . 'Model';
 
-				if (!is_subclass_of($model, '\Common\Model')) {
+				if (!is_subclass_of($class, '\Common\Model')) {
 					throw new BlackBoxException(BlackBoxException::MODEL_IMPLEMENTATION, ['class' => $model]);
 				}
 
-				$models[] = $model::find($variables);
+				$object = $class::find($variables);
+
+				foreach ($modifiers as $modifier) {
+					$object = $object->$modifier();
+				}
+
+				$models[$model] = $object;
 			}
 		}
-
+		
 		return $models;
 	}
 
@@ -159,19 +187,15 @@ class WebController
 	 * Load the route template
 	 * @param  stdClass $route
 	 * @throws HaltException If template doesn't exist
-	 *
-	 * @todo  Create a View class and use that instead.
 	 */
-	private function makeView(\stdClass $route)
+	private function makeView(\stdClass $route, array $models, array $filters)
 	{
 		if (isset($route->template)) {
-			$template = TEMPLATE_DIR . DIRECTORY_SEPARATOR . str_replace('.', DIRECTORY_SEPARATOR, $route->template) . '.php';
 
-			if (is_readable($template)) {
-				require $template;
-			} else {
-				throw new HaltException(HaltException::NOTFOUND);
-			}
+			// Trigger Event
+			$this->trigger('view.show', [$route->template]);
+
+			return new View($route->template, $models + $filters);
 		}
 	}
 

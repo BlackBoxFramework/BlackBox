@@ -8,8 +8,6 @@ namespace Common;
  * class autoloading
  *
  * @author James Pegg <jamescpegg@gmail.com>
- *
- * @todo  Allow for Composer autoloading
  */
 class Autoloader
 {
@@ -22,6 +20,14 @@ class Autoloader
 		set_include_path(get_include_path() . ';' . implode($include_paths, ';'));
 		spl_autoload_extensions('.php');
 		spl_autoload_register([__NAMESPACE__ . '\Autoloader', 'loader']);
+
+		// Registery Composer Autoloader
+		$composer = PROJECT_DIR . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+
+		if (is_readable($composer)) {
+			require $composer;
+		}
+
 	}
 
 	/**
