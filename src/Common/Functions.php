@@ -39,3 +39,22 @@ function interpolate($message, array $context = array())
 		trigger_error('Message is not a string.');
 	}
 }
+
+/**
+ * Searches an array for a type of object.
+ * @param  array  $array
+ * @param  string $object
+ * @return boolean
+ */
+function array_search_object(array $array, $object)
+{	
+	if (is_string($object)) {
+		foreach ($array as $value) {
+			if ($value instanceof $object) {
+				return true;
+			}
+		}		
+	}
+
+	return false;
+}

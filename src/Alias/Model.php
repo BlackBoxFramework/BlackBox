@@ -1,7 +1,7 @@
 <?php
 
 abstract class Model
-	Extends \Common\Model
+	Extends \Common\ActiveRecord\Model
 {
 
 }

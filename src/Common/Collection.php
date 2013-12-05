@@ -2,11 +2,16 @@
 
 namespace Common;
 
+/**
+ * Collection Container
+ *
+ * Basic extension of the ArrayIterator class.
+ *
+ * @author James Pegg <jamescpegg@gmail.com>
+ */
 class Collection
 	extends \ArrayIterator
 {
-
-	// Stack Modification
 
 	/**
 	 * Returns the first item
@@ -27,5 +32,5 @@ class Collection
 		$this->seek($this->count() - 1);
 		return $this->current();
 	}
-
+	
 }

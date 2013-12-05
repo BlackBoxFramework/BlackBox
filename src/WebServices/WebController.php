@@ -166,7 +166,7 @@ class WebController
 
 				$class = ucfirst(strtolower($model)) . 'Model';
 
-				if (!is_subclass_of($class, '\Common\Model')) {
+				if (!is_subclass_of($class, '\Common\ActiveRecord\Model')) {
 					throw new BlackBoxException(BlackBoxException::MODEL_IMPLEMENTATION, ['class' => $model]);
 				}
 
