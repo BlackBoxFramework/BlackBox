@@ -3,6 +3,7 @@
 namespace WebServices;
 
 use Common\Exceptions\BlackBoxException;
+use WebServices\Redirect;
 use WebServices\Route;
 use WebServices\View;
 use WebServices\Exceptions\HaltException;
@@ -55,12 +56,32 @@ class WebController
 	 */
 	public function run()
 	{
-		$route 		= $this->resolveRequest(REQUEST_URI);
-		$filters 	= $this->loadFilters($route);
-		$models 	= $this->loadModels($route);
-		$view 		= $this->makeView($route, $models, $filters);
 
-		$view->show();
+		if (!$this->redirects(REQUEST_URI)) {
+			$route 		= $this->resolveRequest(REQUEST_URI);
+			$filters 	= $this->loadFilters($route);
+			$models 	= $this->loadModels($route);
+			$view 		= $this->makeView($route, $models, $filters);
+
+			$view->show();
+		}
+
+	}
+
+	/**
+	 * Automatic Redirects
+	 * @param  string $request
+	 * @return bool
+	 */
+	private function redirects($request)
+	{
+		if (is_readable(PROJECT_DIR . '/redirect.json')) {
+			$redirects = json_get_contents(PROJECT_DIR . '/redirect.json', true, true);
+
+			Redirect::fromArray($redirects, $request);
+		}
+
+		return false;
 	}
 
 	/**

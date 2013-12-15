@@ -138,6 +138,7 @@ class Cache
 	 * Add a dependency to the current cache
 	 * @param string $identifier
 	 * @param integer $timestamp
+	 * @throws InvalidArgumentException If arguments are invalid
 	 */
 	public function addDependency($identifier, $timestamp)
 	{

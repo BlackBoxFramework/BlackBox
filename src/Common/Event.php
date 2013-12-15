@@ -19,6 +19,7 @@ class Event
 	 * Hook in a new event callback
 	 * @param  string  $event    
 	 * @param  Closure $callback
+	 * @throws InvalidArgumentException If arguments are invalid
 	 */
 	final protected function hook($event, \Closure $callback)
 	{
