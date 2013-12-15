@@ -23,6 +23,7 @@ class View
 	 * Sets the template and any provided data (e.g. models)
 	 * @param string $template
 	 * @param array  $data
+	 * @throws InvalidArgumentException If arguments are invalid
 	 */
 	public function __construct($template, array $data)
 	{
@@ -43,6 +44,7 @@ class View
 	 * Shows the template file. Checks cache for a cached version,
 	 * otherwise it compiles the template.
 	 * @return null
+	 * @throws HaltException If template is unreadable
 	 */
 	public function show()
 	{
