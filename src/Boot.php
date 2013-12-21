@@ -71,6 +71,9 @@ Autoloader::register([__DIR__,
 // Load Configuration File
 if (is_readable(PROJECT_DIR . '/config.json')) {
     $config = json_get_contents(PROJECT_DIR . '/config.json', true);
+
+    // Merge settings into one object
+    $config = (object) array_merge((array) $config->default, (array) $config->{DOMAIN});
 } else {
     throw new Exception('Configuration file either does not exist or is not readable.', 1);
 }
@@ -84,7 +87,7 @@ if (is_readable(PROJECT_DIR . '/routes.json')) {
 
 // Set PHP Debugging
 if ((isset($_SERVER['HTTP_HOST']) && $config->$_SERVER['HTTP_HOST']->debug) ||
-    ($config->default->debug)) {
+    ($config->debug)) {
     ini_set('display_errors', 1);
 }
 
@@ -107,11 +110,11 @@ if (extension_loaded('mongo')) {
     $MongoClient = new MongoClient();
 
     // Select Database
-    $MongoDatabase = $MongoClient->{$config->default->mongo_db};
+    $MongoDatabase = $MongoClient->{$config->mongo_db};
 
     // Authenticate Connection
-    $MongoDatabase->authenticate($config->default->mongo_user,
-                                 $config->default->mongo_pwd);
+    $MongoDatabase->authenticate($config->mongo_user,
+                                 $config->mongo_pwd);
 
     // Make the database available
     ObjectContainer::setObject('MongoDatabase', $MongoDatabase);
@@ -122,10 +125,10 @@ if (PHP_SAPI == 'cli') {
 
     $service = new CommandController($routes, $config);
 
-} elseif(isset($config->default->api) &&
-         isset($config->default->api_url) &&
-         $config->default->api == true && 
-         $config->default->api_url == $_SERVER['HTTP_HOST']) {
+} elseif(isset($config->api) &&
+         isset($config->api_url) &&
+         $config->api == true && 
+         $config->api_url == $_SERVER['HTTP_HOST']) {
 
     $service = new ApiController($routes, $config);
 
