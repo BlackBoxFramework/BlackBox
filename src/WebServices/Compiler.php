@@ -41,7 +41,7 @@ class Compiler
 	 */
 	private $methods = [
 							'define' 		=> '#{define\((?P<variable>\w+), (?P<value>.*)\)}#',
-							'foreach'		=> '#{foreach (?P<iterable>\w+) as (?P<variable>\w+)}(?P<contents>.*?)({else}(?P<else>.*?))?{/foreach}#s',
+							'foreach'		=> '#{foreach\((?P<iterable>\w+) as (?P<variable>\w+)\)}(?P<contents>.*?)({else}(?P<else>.*?))?{/foreach}#s',
 							'echoEscape' 	=> '#{{{(?P<variable>.*)}}}#',
 							'echo'			=> '#{{(?P<variable>.*)}}#',
 							'asset'			=> '#{asset\((?P<type>.*?)\)}#',
