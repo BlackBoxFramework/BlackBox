@@ -3,6 +3,7 @@
 namespace WebServices;
 
 use Common\Exceptions\BlackBoxException;
+use WebServices\Assets;
 use WebServices\Redirect;
 use WebServices\Route;
 use WebServices\View;
@@ -58,6 +59,9 @@ class WebController
 	{
 
 		if (!$this->redirects(REQUEST_URI)) {
+
+			$this->assets();
+
 			$route 		= $this->resolveRequest(REQUEST_URI);
 			$filters 	= $this->loadFilters($route);
 			$models 	= $this->loadModels($route);
@@ -66,6 +70,16 @@ class WebController
 			$view->show();
 		}
 
+	}
+
+	/**
+	 * Compiles project assets
+	 * @return null
+	 */
+	private function assets()
+	{
+		$manager = Assets::getInstance();
+		$manager->compile($this->config->assets);
 	}
 
 	/**
