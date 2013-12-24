@@ -41,7 +41,7 @@ class Compiler
 	 */
 	private $methods = [
 							'define' 		=> '#{define\((?P<variable>\w+), (?P<value>.*)\)}#',
-							'foreach'		=> '#{foreach (?P<iterable>\w+) as (?P<variable>\w+)}(?P<contents>.*?){/foreach}#s',
+							'foreach'		=> '#{foreach (?P<iterable>\w+) as (?P<variable>\w+)}(?P<contents>.*?)({else}(?P<else>.*?))?{/foreach}#s',
 							'echoEscape' 	=> '#{{{(?P<variable>.*)}}}#',
 							'echo'			=> '#{{(?P<variable>.*)}}#',
 							'asset'			=> '#{asset\((?P<type>.*?)\)}#',
@@ -106,7 +106,14 @@ class Compiler
 	 */
 	public function foreachCallback(array $matches, $scope)
 	{
-		return '<?php foreach ($' . $scope . $matches['iterable'] . ' as $' . $matches['variable'] . '): ?>' . $this->parse($matches['contents'], '') . '<?php endforeach;?>';
+		$foreach = '<?php foreach ($' . $scope . $matches['iterable'] . ' as $' . $matches['variable'] . '): ?>' . $this->parse($matches['contents'], '') . '<?php endforeach;?>';
+		
+		// If fallback is provided, use the loopElse method
+		if (isset($matches['else'])) {
+			$foreach = $this->loopElse($matches, $scope, $foreach);
+		}
+
+		return $foreach;
 	}
 
 	/**
@@ -183,6 +190,30 @@ class Compiler
 		$this->cache->addDependency($template, filemtime($template));
 
 		return $this->parse(file_get_contents($template));
+	}
+
+	/**
+	 * Creates an if statement
+	 * @param  string $statement
+	 * @param  string $true
+	 * @param  string $false
+	 * @return string
+	 */
+	private function ifStatement($statement, $true, $false)
+	{
+		return '<?php if (' . $statement . '):?>' . $true . '<?php else:?>' . $false . '<?php endif;?>' ;
+	}
+
+	/**
+	 * Wraps a loop in an if statement
+	 * @param  array  $matches
+	 * @param  string $scope
+	 * @param  string $loop
+	 * @return string
+	 */
+	private function loopElse(array $matches, $scope, $loop)
+	{
+		return 	$this->ifStatement('count($' . $scope . $matches['iterable'] . ') > 0', $loop, $this->parse($matches['else'], ''));
 	}
 
 }
