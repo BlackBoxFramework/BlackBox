@@ -78,8 +78,10 @@ class WebController
 	 */
 	private function assets()
 	{
-		$manager = Assets::getInstance();
-		$manager->compile($this->config->assets);
+		if (isset($this->config->assets)) {
+			$manager = Assets::getInstance();
+			$manager->compile($this->config->assets);			
+		}
 	}
 
 	/**
