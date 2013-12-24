@@ -44,6 +44,7 @@ class Compiler
 							'foreach'		=> '#{foreach (?P<iterable>\w+) as (?P<variable>\w+)}(?P<contents>.*?){/foreach}#s',
 							'echoEscape' 	=> '#{{{(?P<variable>.*)}}}#',
 							'echo'			=> '#{{(?P<variable>.*)}}#',
+							'asset'			=> '#{asset\((?P<type>.*?)\)}#',
 							'section'		=> '#{section\((?P<section>\w+)\)}(?P<content>.*?){/section}#s',
 							'yield'			=> '#{yield\((?P<section>\w+)\)}#',
 							'extends'		=> '#{extends\((?P<template>.*)\)}#'
@@ -85,7 +86,7 @@ class Compiler
 	 * @param  string $scope
 	 * @return string
 	 */
-	public function defineCallback($matches, $scope)
+	public function defineCallback(array $matches, $scope)
 	{
 		// Checks if it's a string or a reference than existing variable
 		if (preg_match('#\'(.*)\'#', $matches['value'])) {
@@ -103,7 +104,7 @@ class Compiler
 	 * @param  string $scope
 	 * @return string
 	 */
-	public function foreachCallback($matches, $scope)
+	public function foreachCallback(array $matches, $scope)
 	{
 		return '<?php foreach ($' . $scope . $matches['iterable'] . ' as $' . $matches['variable'] . '): ?>' . $this->parse($matches['contents'], '') . '<?php endforeach;?>';
 	}
@@ -114,7 +115,7 @@ class Compiler
 	 * @param  string $scope
 	 * @return string
 	 */
-	public function echoEscapeCallback($matches, $scope)
+	public function echoEscapeCallback(array $matches, $scope)
 	{
 		return '<?= htmlspecialchars($' . $scope . str_replace('.', '->', $matches['variable']) . ') ;?>';
 	}
@@ -125,9 +126,20 @@ class Compiler
 	 * @param  string $scope
 	 * @return string
 	 */
-	public function echoCallback($matches, $scope)
+	public function echoCallback(array $matches, $scope)
 	{
 		return '<?= $' . $scope . str_replace('.', '->', $matches['variable']) . ' ;?>';
+	}
+
+	/**
+	 * Echo a compiled asset
+	 * @param  array $matches
+	 * @param  string $scope
+	 * @return string          
+	 */
+	public function assetCallback(array $matches, $scope)
+	{
+		return "<?= Assets::{$matches['type']}() ;?>";
 	}
 
 	/**
@@ -135,7 +147,7 @@ class Compiler
 	 * @param  array $matches
 	 * @return string
 	 */
-	public function sectionCallback($matches)
+	public function sectionCallback(array $matches)
 	{
 		$this->section[$matches['section']] = $this->parse($matches['content']);
 
@@ -147,7 +159,7 @@ class Compiler
 	 * @param  array $matches
 	 * @return string
 	 */
-	public function yieldCallback($matches)
+	public function yieldCallback(array $matches)
 	{
 		if (isset($this->section[$matches['section']])) {
 			return $this->section[$matches['section']];
@@ -161,7 +173,7 @@ class Compiler
 	 * @param  array $matches
 	 * @return string
 	 */
-	public function extendsCallback($matches)
+	public function extendsCallback(array $matches)
 	{
 		$template = $matches['template'];
 		$template = str_replace('.', DIRECTORY_SEPARATOR, $template) . '.php';

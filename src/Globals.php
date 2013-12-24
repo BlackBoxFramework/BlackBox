@@ -24,6 +24,10 @@ if (isset($_SERVER['REQUEST_URI'])) {
 	define('REQUEST_URI', explode('?', $_SERVER['REQUEST_URI'])[0]);
 }
 
+if (isset($_SERVER['HTTP_HOST'])) {
+	define('DOMAIN', $_SERVER['HTTP_HOST']);
+}
+
 
 
 /**
