@@ -80,6 +80,13 @@ class Assets
 		}
 	}
 
+	public function registerPattern(\WebServices\Compiler $compiler)
+	{
+		$compiler->register('#{asset\((?P<type>.*?)\)}#', function($matches){
+			return "<?= Assets::{$matches['type']}() ;?>";
+		});
+	}
+
 	/**
 	 * Overloaded method for returning any extension type (e.g. CSS, JS)
 	 * @param  string $name      
