@@ -60,12 +60,12 @@ class WebController
 
 		if (!$this->redirects(REQUEST_URI)) {
 
-			$this->assets();
-
 			$route 		= $this->resolveRequest(REQUEST_URI);
 			$filters 	= $this->loadFilters($route);
 			$models 	= $this->loadModels($route);
 			$view 		= $this->makeView($route, $models, $filters);
+
+			$this->assets($view->compiler);
 
 			$view->show();
 		}
@@ -76,10 +76,11 @@ class WebController
 	 * Compiles project assets
 	 * @return null
 	 */
-	private function assets()
+	private function assets(\WebServices\Compiler $compiler)
 	{
 		if (isset($this->config->assets)) {
 			$manager = Assets::getInstance();
+			$manager->registerPattern($compiler);
 			$manager->compile($this->config->assets);			
 		}
 	}

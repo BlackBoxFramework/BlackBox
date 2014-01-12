@@ -9,211 +9,209 @@ use WebServices\Exceptions\HaltException;
  * into proper PHP.
  *
  * @author  James Pegg <jamescpegg@gmail.com>
- * 
- * @todo  If / Else Statements
- * @todo  While
- * @todo  Switch Statements
- * @todo  Default responses for loops (e.g. foreach / else)
  */
 class Compiler
 {
 	/**
-	 * Compiled content
-	 * @var string
-	 */
-	private $content;
-
-	/**
-	 * Cache object
+	 * Cache instance
 	 * @var \Common\Cache
 	 */
-	private $cache;	
+	private $cache;
 
 	/**
-	 * Array of sections
-	 * @var array
+	 * Set the cache instance
+	 * @param \Common\Cache $cache
 	 */
-	private $sections = [];
-	
-	/**
-	 * Array of methods and patterns
-	 * @var array
-	 */
-	private $methods = [
-							'define' 		=> '#{define\((?P<variable>\w+), (?P<value>.*)\)}#',
-							'foreach'		=> '#{foreach\((?P<iterable>\w+) as (?P<variable>\w+)\)}(?P<contents>.*?)({else}(?P<else>.*?))?{/foreach}#s',
-							'echoEscape' 	=> '#{{{(?P<variable>.*)}}}#',
-							'echo'			=> '#{{(?P<variable>.*)}}#',
-							'asset'			=> '#{asset\((?P<type>.*?)\)}#',
-							'section'		=> '#{section\((?P<section>\w+)\)}(?P<content>.*?){/section}#s',
-							'yield'			=> '#{yield\((?P<section>\w+)\)}#',
-							'extends'		=> '#{extends\((?P<template>.*)\)}#'
-						];
-
-	/**
-	 * Sets cache object
-	 * @param CommonCache $cache
-	 */
-	public function __construct(\Common\Cache $cache)
+	public function setCache(\Common\Cache $cache)
 	{
 		$this->cache = $cache;
 	}
 
 	/**
-	 * Parses a give string.
-	 * @param  string $content Content to be parsed
-	 * @param  string $scope   Current variable scope
+	 * Parse provided content
+	 * @param  string $content
+	 * @throws InvalidArgumentException If arguments are invalid
 	 * @return string
 	 */
-	public function parse($content, $scope = 'this->')
+	public function parse($content)
 	{
-		$this->content = $content;
+		if (is_string($content)) {
+			foreach ($this->patterns as $pattern => $callback) {
+				$content =  preg_replace_callback($pattern, $callback, $content);
+			}
 
-		// Loop through all methods & patterns
-		foreach ($this->methods as $method => $pattern) {
-			$this->content = preg_replace_callback($pattern, function ($matches) use ($scope, $method) {
-				$method = "{$method}Callback";
-				return $this->$method($matches, $scope);
-			}, $this->content);
-		}
-
-		return $this->content;
-	}
-
-	/**
-	 * Defines a variable
-	 * @param  array $matches
-	 * @param  string $scope
-	 * @return string
-	 */
-	public function defineCallback(array $matches, $scope)
-	{
-		// Checks if it's a string or a reference than existing variable
-		if (preg_match('#\'(.*)\'#', $matches['value'])) {
-			$value = $matches['value'];
+			return $content;			
 		} else {
-			$value = '$' . $scope . str_replace('.', '->', $matches['value']);
+			throw new \InvalidArgumentException("Expecting a String, '{$content}' given.");
 		}
 
-		return '<?php $' . $scope . $matches['variable'] . ' = ' . $value . ';?>';
 	}
 
 	/**
-	 * Create a foreach loop
-	 * @param  array $matches
-	 * @param  string $scope
+	 * Register an additional pattern
+	 * @param  string $pattern 
+	 * @param  mixed $callback
+	 * @return null
+	 */
+	public function register($pattern, $callback)
+	{
+		if (is_string($pattern)) {
+			$this->patterns[$pattern] = $callback;
+		} else {
+			throw new \InvalidArgumentException("Expecting a String, '{$pattern}' given.");
+		}	
+	}
+
+	/**
+	 * Compiled sections
+	 * @var array
+	 */
+	private $sections = [];
+
+	/**
+	 * Inbuilt patterns and callbacks.
+	 * @var array
+	 */
+	private $patterns = 
+	[
+		// Control Structures
+		'#{(foreach|while)\((\$(\w+))(.*?)\)}(.*?)({else}(.*?))?{/(foreach|while)}#s'	=> [__CLASS__, '_loop'],
+		'#{(if|else|elseif|for|switch|case|default)(\((.*?)\))?}((\s|\n|\t)*)?#'		=> [__CLASS__, '_open'],
+		'#{/(if|for|switch)}#'															=> [__CLASS__, '_end'],
+		'#{/(case|default)}#' 															=> [__CLASS__, '_break'],
+		'#{(break|continue)}#'															=> [__CLASS__, '_control'],
+
+		// Variables
+		'#{define\(\$(\w+), (.*)\)}#'													=> [__CLASS__, '_define'],
+		'#{{(.+?)}}#' 																	=> [__CLASS__, '_echo'],
+
+		// Internal Features
+		'#{include\((.*)\)}#' 															=> [__CLASS__, '_include'],
+		'#{section\((\w+)\)}(?P<content>.*?){/section}#s' 								=> [__CLASS__, '_section'],
+		'#{yield\((\w+)\)}#' 															=> [__CLASS__, '_yield'],
+		'#{extend\((.*)\)}#' 															=> [__CLASS__, '_extend']
+	];
+
+	/**
+	 * Returns a PHP loop. Additionally can check if the variable being looped exists.
+	 * @param  array  $matches
 	 * @return string
 	 */
-	public function foreachCallback(array $matches, $scope)
-	{
-		$foreach = '<?php foreach ($' . $scope . $matches['iterable'] . ' as $' . $matches['variable'] . '): ?>' . $this->parse($matches['contents'], '') . '<?php endforeach;?>';
-		
-		// If fallback is provided, use the loopElse method
-		if (isset($matches['else'])) {
-			$foreach = $this->loopElse($matches, $scope, $foreach);
-		}
-
-		return $foreach;
+	private function _loop(array $matches) {
+		return 	"<?php if (isset({$matches[2]})):{$matches[1]}({$matches[2]}{$matches[4]}):?>\n" .
+				$this->parse($matches[5]) .
+				"<?php end{$matches[1]};else:?>" .
+				(isset($matches[7]) ? $this->parse($matches[7]) : '') .
+				"<?php endif;?>" ;
 	}
 
 	/**
-	 * Escape and echo a variable
-	 * @param  array $matches
-	 * @param  string $scope
+	 * A generic opening language construct. Trims whitespace (most useful for switch statements)
+	 * @param  array  $matches
 	 * @return string
 	 */
-	public function echoEscapeCallback(array $matches, $scope)
-	{
-		return '<?= htmlspecialchars($' . $scope . str_replace('.', '->', $matches['variable']) . ') ;?>';
+	private function _open(array $matches) {
+		return '<?php ' . substr(trim($matches[0]), 1, -1) . ': ?>';
 	}
 
 	/**
-	 * Echo a variable
-	 * @param  array $matches
-	 * @param  string $scope
-	 * @return string
-	 */
-	public function echoCallback(array $matches, $scope)
-	{
-		return '<?= $' . $scope . str_replace('.', '->', $matches['variable']) . ' ;?>';
-	}
-
-	/**
-	 * Echo a compiled asset
-	 * @param  array $matches
-	 * @param  string $scope
+	 * A generic closing language construct.
+	 * @param  array  $matches 
 	 * @return string          
 	 */
-	public function assetCallback(array $matches, $scope)
-	{
-		return "<?= Assets::{$matches['type']}() ;?>";
+	private function _end(array $matches) {
+		return '<?php end' . $matches[1] . ';?>';
 	}
 
 	/**
-	 * Stores a section
-	 * @param  array $matches
+	 * A break (for loops or switch statements)
+	 * @param  array  $matches
 	 * @return string
 	 */
-	public function sectionCallback(array $matches)
+	private function _break(array $matches) {
+		return '<?php break;?>';
+	}
+
+	/**
+	 * Any form of control, like 'break', 'continue'
+	 * @param  array  $matches
+	 * @return string
+	 */
+	private function _control(array $matches) {
+		return '<?php ' . substr(trim($matches[0]), 1, -1) . '; ?>';
+	}
+
+	/**
+	 * Defines / creates a new variable.
+	 * @param  array  $matches
+	 * @return string
+	 */
+	private function _define(array $matches)
 	{
-		$this->section[$matches['section']] = $this->parse($matches['content']);
+		return "<?php \${$matches[1]} = {$matches[2]} ;?>";
+	}
+
+	/**
+	 * Echoes a variable. Automatically applies htmlspecialchars
+	 * @param  array $matches 
+	 * @return string          
+	 */
+	private function _echo(array $matches)
+	{
+		return "<?= htmlspecialchars({$matches[1]}) ;?>";		
+	}
+
+	/**
+	 * Include another template
+	 * @param  array $matches 
+	 * @return string
+	 */
+	private function _include(array $matches)
+	{
+		$template = template_file($matches[1]);
+
+		return "<?php include('{$template}');?>";
+	}
+
+	/**
+	 * Stores a section of parsed content
+	 * @param  array  $matches
+	 * @return string
+	 */
+	private function _section(array $matches)
+	{
+		$this->section[$matches[1]] = $this->parse($matches['content']);
 
 		return '';
 	}
 
 	/**
-	 * Fetches a section
-	 * @param  array $matches
+	 * Yields a section of stored content
+	 * @param  array  $matches [description]
 	 * @return string
 	 */
-	public function yieldCallback(array $matches)
+	private function _yield(array $matches)
 	{
-		if (isset($this->section[$matches['section']])) {
-			return $this->section[$matches['section']];
+		if (isset($this->section[$matches[1]])) {
+			return $this->section[$matches[1]];
 		} else {
 			return '';
 		}
 	}
 
 	/**
-	 * Extends a template
-	 * @param  array $matches
+	 * Extends another template
+	 * @param  array  $matches
 	 * @return string
 	 */
-	public function extendsCallback(array $matches)
+	private function _extend(array $matches)
 	{
-		$template = $matches['template'];
-		$template = str_replace('.', DIRECTORY_SEPARATOR, $template) . '.php';
-		$template = TEMPLATE_DIR . DIRECTORY_SEPARATOR . $template;
+		$template = template_file($matches[1]);
 
 		// Add dependency to cache
 		$this->cache->addDependency($template, filemtime($template));
 
 		return $this->parse(file_get_contents($template));
-	}
-
-	/**
-	 * Creates an if statement
-	 * @param  string $statement
-	 * @param  string $true
-	 * @param  string $false
-	 * @return string
-	 */
-	private function ifStatement($statement, $true, $false)
-	{
-		return '<?php if (' . $statement . '):?>' . $true . '<?php else:?>' . $false . '<?php endif;?>' ;
-	}
-
-	/**
-	 * Wraps a loop in an if statement
-	 * @param  array  $matches
-	 * @param  string $scope
-	 * @param  string $loop
-	 * @return string
-	 */
-	private function loopElse(array $matches, $scope, $loop)
-	{
-		return 	$this->ifStatement('count($' . $scope . $matches['iterable'] . ') > 0', $loop, $this->parse($matches['else'], ''));
 	}
 
 }

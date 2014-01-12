@@ -20,6 +20,18 @@ class View
 	private $template = '';
 
 	/**
+	 * Template compiler instance
+	 * @var \WebServices\Compiler
+	 */
+	public $compiler;
+
+	/**
+	 * Stored View Properties
+	 * @var array
+	 */
+	private $properties = [];
+
+	/**
 	 * Sets the template and any provided data (e.g. models)
 	 * @param string $template
 	 * @param array  $data
@@ -32,12 +44,42 @@ class View
 			
 			foreach ($data as $key => $value) {
 				$this->$key = $value;
-			}			
+			}
+
+			$this->compiler = new Compiler();
 		} else {
 			throw new \InvalidArgumentException("Expecting a String, '{$template}' given.");
 		}
+	}
 
+	/**
+	 * Set a view property
+	 * @param string $name
+	 * @param mixed $value
+	 */
+	public function __set($name, $value)
+	{
+		$this->properties[$name] = $value;
+	}
 
+	/**
+	 * Returns a view property
+	 * @param  string $name
+	 * @return mixed       
+	 */
+	public function __get($name)
+	{
+		return ($this->__isset($name) ? $this->properties[$name] : false);
+	}
+
+	/**
+	 * Checks if a property is set
+	 * @param  string  $name
+	 * @return boolean
+	 */
+	public function __isset($name)
+	{
+		return (is_null($this->properties[$name]) ? false : true);
 	}
 
 	/**
@@ -48,21 +90,29 @@ class View
 	 */
 	public function show()
 	{
-		$template = $this->template;
-		$template = str_replace('.', DIRECTORY_SEPARATOR, $template) . '.php';
-		$template = TEMPLATE_DIR . DIRECTORY_SEPARATOR . $template;
+		$template = template_file($this->template);
 
 		if (is_readable($template)) {
 
 			$cache = new Cache($this->template, filemtime($template));
 
 			if (!isset($cache->content)) {
-				$compiler = new Compiler($cache);
+				$this->compiler->setCache($cache);
 
-				$cache->content = $compiler->parse(file_get_contents($template));
+				$cache->content = $this->compiler->parse(file_get_contents($template));
 			}
 
-			require $cache->path;
+
+			// Sandbox the template
+			call_user_func_array(function($file, array $properties) {
+
+				foreach ($properties as $name => $value) {
+					$$name = $value;
+				}
+
+				require $file;
+			}, [$cache->path, $this->properties]);
+
 		} else {
 			throw new HaltException(HaltException::NOTFOUND);
 		}
