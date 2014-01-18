@@ -61,9 +61,14 @@ class Router
 	 * @param string $route_uri
 	 * @param object $data
 	 */
-	public function addRoute($route_uri, stdClass $data)
+	public function addRoute($route_uri, stdClass $data, $method = 'GET')
 	{
-		$this->routes[$route_uri] = $data;
+		// Override method if provided in data
+		if (isset($data->method)) {
+			$method = strtoupper($data->method);
+		}
+
+		$this->routes[$method][$route_uri] = $data;
 
 		// Nested routes
 		if (isset($data->children)) {
@@ -86,15 +91,15 @@ class Router
 	 */
 	public function resolve($request_uri)
 	{
-		if (isset($this->routes[$request_uri])) {
+		if (isset($this->routes[METHOD][$request_uri])) {
 
 			// Basic static route was found
-			return $this->route = $this->routes[$request_uri];
+			return $this->route = $this->routes[METHOD][$request_uri];
 
 		} else {
 
 			// Loop through each route until one can be found
-			foreach ($this->routes as $route => $data) {
+			foreach ($this->routes[METHOD] as $route => $data) {
 
 				// Only return the route if it's a named route and could be resolved.
 				if ((strpos($route, ':')  ||
@@ -118,6 +123,7 @@ class Router
 	 */
 	private function resolveDynamicRoute($route, stdClass $data, $request_uri)
 	{
+
 		// Split the route into parts
 		$parts = array_values(array_filter(explode('/', $route)));
 
