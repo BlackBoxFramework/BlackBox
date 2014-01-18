@@ -1,6 +1,6 @@
 <?php
 
-namespace WebServices;
+namespace Common;
 
 use \stdClass;
 

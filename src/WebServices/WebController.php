@@ -3,6 +3,7 @@
 namespace WebServices;
 
 use Common\Exceptions\BlackBoxException;
+use Common\Router;
 use WebServices\Assets;
 use WebServices\Redirect;
 use WebServices\Route;
