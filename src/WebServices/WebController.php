@@ -3,6 +3,7 @@
 namespace WebServices;
 
 use Common\Exceptions\BlackBoxException;
+use Common\FilterStack;
 use Common\Router;
 use WebServices\Assets;
 use WebServices\Redirect;
@@ -33,7 +34,7 @@ class WebController
 	 * Resolved route
 	 * @var stdClass
 	 */
-	private $route;
+	public $route;
 
 	/**
 	 * Application settings
@@ -123,7 +124,7 @@ class WebController
 			// Trigger Event
 			$this->trigger('route.resolved');
 
-			return $route;
+			return $this->route = $route;
 		}
 	}
 
@@ -139,24 +140,11 @@ class WebController
 
 		if (isset($route->filters)) {
 			foreach ($route->filters as $filter) {
-				$filter = ucfirst(strtolower($filter)) . 'Filter';
-
-				if (!is_subclass_of($filter, '\Common\Filter')) {
-					throw new BlackBoxException(BlackBoxException::FILTER_IMPLEMENTATION, ['class' => $filter]);
-				}
-
-				// Instantiate Filter
-				$filter = new $filter();
-
-				// Boot the filter
-				$filter->boot();
-
-				// Make filter accesible to view
-				$filters[] = $filter;
+				FilterStack::add($filter);
 			}	
 		}
 
-		return $filters;
+		return FilterStack::process($this);
 	}
 
 	/**
@@ -216,6 +204,11 @@ class WebController
 				}
 
 				$models[$model] = $object;
+
+				// Stack filters
+				foreach ($class::getFilters() as $filter) {
+					FilterStack::add($filter);
+				}				
 			}
 		}
 		

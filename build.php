@@ -19,7 +19,7 @@
  */
 
 // Delete the existing archive
-unlink('blackbox.phar');
+@unlink('blackbox.phar');
 
 $phar = new Phar('blackbox.phar');
 
