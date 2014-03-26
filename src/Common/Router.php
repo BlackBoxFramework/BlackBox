@@ -61,21 +61,23 @@ class Router
 	 * @param string $route_uri
 	 * @param object $data
 	 */
-	public function addRoute($route_uri, stdClass $data, $method = 'GET')
+	public function addRoute($route_uri, stdClass $data, $methods = ['GET'])
 	{
 		// Override method if provided in data
-		if (isset($data->method)) {
-			$method = strtoupper($data->method);
+		if (isset($data->methods)) {
+			$methods = array_map('strtoupper', $data->methods);
 		}
 
-		$this->routes[$method][$route_uri] = $data;
+		foreach ($methods as $method) {
+			$this->routes[$method][$route_uri] = $data;
+		}
 
 		// Nested routes
 		if (isset($data->children)) {
 
 			foreach ($data->children as $child_uri => $child_data) {
 
-				$this->addRoute($route_uri . $child_uri, $child_data);
+				$this->addRoute($route_uri . $child_uri, $child_data, $methods);
 
 			}
 
