@@ -5,6 +5,7 @@ namespace WebServices;
 use Common\Exceptions\BlackBoxException;
 use Common\FilterStack;
 use Common\Router;
+use Common\ObjectContainer;
 use WebServices\Assets;
 use WebServices\Redirect;
 use WebServices\Route;
@@ -20,7 +21,6 @@ use WebServices\Exceptions\HaltException;
  * @author James Pegg <jamescpegg@gmail.com>
  */
 class WebController
-	extends \Common\Event
 	implements \Common\ServiceInterface
 {
 
@@ -63,8 +63,8 @@ class WebController
 		if (!$this->redirects(REQUEST_URI)) {
 
 			$route 		= $this->resolveRequest(REQUEST_URI);
-			$filters 	= $this->loadFilters($route);
 			$models 	= $this->loadModels($route);
+			$filters 	= $this->loadFilters($route);
 			$view 		= $this->makeView($route, $models, $filters);
 
 			$this->assets($view->compiler);
@@ -120,10 +120,6 @@ class WebController
 		if (!$route = $router->resolve($request)) {
 			throw new HaltException(HaltException::NOTFOUND);
 		} else {
-
-			// Trigger Event
-			$this->trigger('route.resolved');
-
 			return $this->route = $route;
 		}
 	}
@@ -144,7 +140,7 @@ class WebController
 			}	
 		}
 
-		return FilterStack::process($this);
+		return FilterStack::process();
 	}
 
 	/**
@@ -191,7 +187,7 @@ class WebController
 					}
 				}
 
-				$class = ucfirst(strtolower($model)) . 'Model';
+				$class = 'Model\\' . ucfirst(strtolower($model));
 
 				if (!is_subclass_of($class, '\Common\ActiveRecord\Model')) {
 					throw new BlackBoxException(BlackBoxException::MODEL_IMPLEMENTATION, ['class' => $model]);
@@ -203,14 +199,19 @@ class WebController
 					$object = $object->$modifier();
 				}
 
-				$models[$model] = $object;
+				$models[strtolower(ucfirst($model))] = $object;
 
-				// Stack filters
-				foreach ($class::getFilters() as $filter) {
+				// Model Filters
+				$filterMethod = strtolower(METHOD) . 'Filters';
+
+				foreach ($class::$filterMethod() as $filter) {
 					FilterStack::add($filter);
 				}				
 			}
 		}
+
+		// Store Models
+		ObjectContainer::setObjects($models);	
 		
 		return $models;
 	}
@@ -223,11 +224,11 @@ class WebController
 	private function makeView(\stdClass $route, array $models, array $filters)
 	{
 		if (isset($route->template)) {
+			$view = new View($route->template, $models + $filters);
 
-			// Trigger Event
-			$this->trigger('view.show', [$route->template]);
+			ObjectContainer::setObject('View', $view);
 
-			return new View($route->template, $models + $filters);
+			return $view;
 		}
 	}
 

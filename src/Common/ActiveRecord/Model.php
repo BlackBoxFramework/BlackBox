@@ -272,4 +272,13 @@ abstract class Model
 			return true;
 		}	
 	}
+
+	/**
+	 * Method Filter Defaults
+	 * @return array
+	 */
+	public static function getFilters() 	{ return []; }
+	public static function postFilters() 	{ return []; }
+	public static function deleteFilters() 	{ return []; }
+	public static function putFilters() 	{ return []; }
 }
