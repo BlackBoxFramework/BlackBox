@@ -138,6 +138,8 @@ if (PHP_SAPI == 'cli') {
     $service = new WebController($routes, $config);
 }
 
+ObjectContainer::setObject('Service', $service);
+
 // Run the service
 $service->run();
 
