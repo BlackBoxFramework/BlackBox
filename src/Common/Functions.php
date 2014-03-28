@@ -61,5 +61,5 @@ function array_search_object(array $array, $object)
 
 function template_file($template)
 {
-	return TEMPLATE_DIR . DIRECTORY_SEPARATOR . str_replace('.', DIRECTORY_SEPARATOR, $template) . '.tpl.php';
+	return TEMPLATE_DIR . DIRECTORY_SEPARATOR . str_replace('.', DIRECTORY_SEPARATOR, $template) . '.tpl';
 }
