@@ -21,7 +21,7 @@ class Event
 	 * @param  Closure $callback
 	 * @throws InvalidArgumentException If arguments are invalid
 	 */
-	final protected function hook($event, \Closure $callback)
+	final public static function hook($event, \Closure $callback)
 	{
 		if (is_string($event)) {
 			self::$events[$event][] = $callback;
@@ -35,8 +35,11 @@ class Event
 	 * @param  string $event
 	 * @param  array $args
 	 */
-	final protected function trigger($event, array $args = [])
+	final protected static function trigger($event, array $args = [])
 	{
+
+		$event = strtolower(str_replace('\\', '.', get_called_class())) . '.' . $event;
+
 		if (isset(self::$events[$event])) {
 			foreach (self::$events[$event] as $callback) {
 				call_user_func_array($callback, $args);
