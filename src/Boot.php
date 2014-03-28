@@ -86,8 +86,7 @@ if (is_readable(PROJECT_DIR . '/routes.json')) {
 }
 
 // Set PHP Debugging
-if ((isset($_SERVER['HTTP_HOST']) && $config->$_SERVER['HTTP_HOST']->debug) ||
-    ($config->debug)) {
+if ($config->debug) {
     ini_set('display_errors', 1);
 }
 
