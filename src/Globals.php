@@ -28,6 +28,10 @@ if (isset($_SERVER['HTTP_HOST'])) {
 	define('DOMAIN', $_SERVER['HTTP_HOST']);
 }
 
+if (isset($_SERVER['REQUEST_METHOD'])) {
+	define('METHOD', $_SERVER['REQUEST_METHOD']);
+}
+
 
 
 /**

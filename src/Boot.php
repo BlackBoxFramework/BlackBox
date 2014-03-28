@@ -26,6 +26,8 @@ use ApiServices\ApiController;
 use CommandServices\CommandController;
 use WebServices\WebController;
 
+// Sessions
+session_start();
 
 /**
  * =============================================
@@ -86,8 +88,7 @@ if (is_readable(PROJECT_DIR . '/routes.json')) {
 }
 
 // Set PHP Debugging
-if ((isset($_SERVER['HTTP_HOST']) && $config->$_SERVER['HTTP_HOST']->debug) ||
-    ($config->debug)) {
+if ($config->debug) {
     ini_set('display_errors', 1);
 }
 
@@ -136,6 +137,8 @@ if (PHP_SAPI == 'cli') {
 
     $service = new WebController($routes, $config);
 }
+
+ObjectContainer::setObject('Service', $service);
 
 // Run the service
 $service->run();

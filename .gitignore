@@ -1,2 +1,5 @@
 # Ignore Sublime Text Files
 *.sublime-*
+package.json
+gruntfile.js
+/node_modules

@@ -26,7 +26,7 @@ class ObjectContainer
 	 * @return object
 	 * @throws Exception If object isn't stored
 	 */
-	public function getObject($name)
+	public static function getObject($name)
 	{
 		if (isset(self::$objects[$name])) {
 			return self::$objects[$name];
@@ -40,11 +40,18 @@ class ObjectContainer
 	 * @param string $name   
 	 * @param object $object
 	 */
-	public function setObject($name, $object) {
+	public static function setObject($name, $object) {
 		if (is_string($name) &&
 			(is_object($object) ||
 			is_array($object))) {
 			self::$objects[$name] = $object;
+		}
+	}
+
+	public static function setObjects(array $objects) {
+
+		foreach ($objects as $name => $object) {
+			self::setObject($name, $object);
 		}
 	}
 
@@ -53,7 +60,7 @@ class ObjectContainer
 	 * @param  string  $name
 	 * @return boolean
 	 */
-	public function hasObject($name) {
+	public static function hasObject($name) {
 		if (isset(self::$objects[$name])) {
 			return true;
 		} else {

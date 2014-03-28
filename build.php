@@ -19,7 +19,7 @@
  */
 
 // Delete the existing archive
-unlink('blackbox.phar');
+@unlink('blackbox.phar');
 
 $phar = new Phar('blackbox.phar');
 
@@ -30,6 +30,7 @@ $iterator = new RecursiveIteratorIterator (new RecursiveDirectoryIterator ($root
 // Add every file in the source directory to the PHAR
 foreach ($iterator as $file) {
     if ( preg_match ('/\\.php$/i', $file) ) {
+    	exec('php -l ' . $file);
         $phar->addFromString (substr ($file, strlen ($root) + 1), php_strip_whitespace ($file));
     }
 }

@@ -4,6 +4,7 @@ namespace Common\ActiveRecord;
 
 use Common\ObjectContainer;
 use Common\ActiveRecord\ModelCollection;
+use Common\Event;
 
 /**
  * Abstract Model Class
@@ -11,6 +12,7 @@ use Common\ActiveRecord\ModelCollection;
  * @author James Pegg <jamescpegg@gmail.com>
  */
 abstract class Model
+	extends Event
 {
 	/**
 	 * Database table
@@ -62,6 +64,9 @@ abstract class Model
 		// Variables
 		$database = self::connection();
 
+		// Trigger Event
+		self::trigger('find', $constraints);		
+
 		if (!is_null(static::$table)) {
 			$cursor = $database->{static::$table}->find($constraints);
 
@@ -88,6 +93,9 @@ abstract class Model
 		// Variables
 		$database = self::connection();
 
+		// Trigger Event
+		self::trigger('save', [$this]);
+
 		if (!is_null(static::$table) &&
 			empty(array_diff_key(array_flip(static::$required), $this->variables))) {
 			$database->{static::$table}->save($this->variables);
@@ -104,6 +112,9 @@ abstract class Model
 	{
 		// Variables
 		$database = self::connection();
+
+		// Trigger Event
+		self::trigger('delete', [$this]);		
 
 		if (!is_null(static::$table) && isset($this->_id)) {
 			$database->{static::$table}->remove(['_id' => $this->id()]);
@@ -261,4 +272,13 @@ abstract class Model
 			return true;
 		}	
 	}
+
+	/**
+	 * Method Filter Defaults
+	 * @return array
+	 */
+	public static function getFilters() 	{ return []; }
+	public static function postFilters() 	{ return []; }
+	public static function deleteFilters() 	{ return []; }
+	public static function putFilters() 	{ return []; }
 }

@@ -46,6 +46,8 @@ class Autoloader
 	    }
 	    $fileName .= str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
 
-	    require $fileName;
+        if (!@include_once($fileName)) {
+            return false;
+        }
 	}
 }
