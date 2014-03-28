@@ -26,6 +26,8 @@ use ApiServices\ApiController;
 use CommandServices\CommandController;
 use WebServices\WebController;
 
+// Sessions
+session_start();
 
 /**
  * =============================================
