@@ -5,6 +5,7 @@ namespace WebServices;
 use WebServices\Exceptions\HaltException;
 use WebServices\Compiler;
 use Common\Cache;
+use Common\Event;
 
 /**
  * The view is in charge of compiling and showing the template
@@ -12,6 +13,7 @@ use Common\Cache;
  * @author James Pegg <jamescpegg@gmail.com>
  */
 class View
+	extends \Common\Event
 {
 	/**
 	 * Current template
@@ -91,6 +93,9 @@ class View
 	public function show()
 	{
 		$template = template_file($this->template);
+
+		// Trigger Event
+		self::trigger('show', [$this->template]);		
 
 		if (is_readable($template)) {
 
