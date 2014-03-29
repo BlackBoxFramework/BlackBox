@@ -53,9 +53,7 @@ abstract class FilterStack
 	public static function process()
 	{
 		$filters = [];
-
-		print_r(self::$filters);
-
+		
 		foreach (self::$filters as $filter) {
 
 			$filter = new $filter();
