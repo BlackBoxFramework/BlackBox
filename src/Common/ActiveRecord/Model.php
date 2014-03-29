@@ -67,6 +67,12 @@ abstract class Model
 		// Trigger Event
 		self::trigger('find', $constraints);		
 
+		foreach ($constraints as $key => $constraint) {
+			if (in_array($key, static::$protected)) {
+				throw new \InvalidArgumentException('Can\'t search Model by protected variable.');
+			}
+		}
+
 		if (!is_null(static::$table)) {
 			$cursor = $database->{static::$table}->find($constraints);
 
