@@ -199,7 +199,7 @@ class WebController
 					$object = $object->$modifier();
 				}
 
-				$models[strtolower(ucfirst($model))] = $object;
+				$models[strtolower(ucfirst($model))] = $object->fetch();
 
 				// Model Filters
 				$filterMethod = strtolower(METHOD) . 'Filters';

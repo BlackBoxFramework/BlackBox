@@ -4,6 +4,7 @@ namespace Common\ActiveRecord;
 
 use Common\ObjectContainer;
 use Common\ActiveRecord\ModelCollection;
+use Common\ActiveRecord\ModelCursor;
 use Common\Event;
 
 /**
@@ -13,6 +14,7 @@ use Common\Event;
  */
 abstract class Model
 	extends Event
+	implements \JsonSerializable
 {
 	/**
 	 * Database table
@@ -45,6 +47,17 @@ abstract class Model
 	protected 		 $variables = [];	
 
 	/**
+	 * Model constructor
+	 * @param array $properties Properties to be applied
+	 */
+	final public function __construct(array $properties = [])
+	{
+		foreach ($properties as $key => $value) {
+			$this->variables[$key] = $value;
+		}
+	}
+
+	/**
 	 * Fetch the current connection
 	 * @return \MongoClient
 	 */
@@ -52,6 +65,12 @@ abstract class Model
 	{
 		return ObjectContainer::getObject('MongoDatabase');
 	}
+
+	/**
+	 * -----------------------------------------------------------------
+	 * Model Creation
+	 * -----------------------------------------------------------------
+	 */
 
 	/**
 	 * Find a model based on provided constraints
@@ -76,19 +95,22 @@ abstract class Model
 		if (!is_null(static::$table)) {
 			$cursor = $database->{static::$table}->find($constraints);
 
-			$models = new ModelCollection();
-
-			foreach ($cursor as $data) {
-				if (!is_null($data)) {
-					$models[] = new static($data);
-				}			
-			}
-
-			return $models;
+			return new ModelCursor(get_called_class(), $cursor);
 		} else {
 			throw new \InvalidArgumentException('Model table can not be empty or null.');
 		}
 	}
+
+	final public static function get($id)
+	{
+		return self::find(['_id' => new \MongoId($id)])->limit(1)->fetch()[0];
+	}		
+
+	/**
+	 * -----------------------------------------------------------------
+	 * Object Persistence
+	 * -----------------------------------------------------------------
+	 */
 
 	/**
 	 * Saves current state of the model
@@ -130,15 +152,6 @@ abstract class Model
 	}
 
 	/**
-	 * Returns the model's ID
-	 * @return string
-	 */
-	final public function id()
-	{
-		return $this->variables['_id'];
-	}
-
-	/**
 	 * Enforces all the index rules of the model
 	 */
 	final public static function enforceIndexes()
@@ -163,18 +176,13 @@ abstract class Model
 				$database->{static::$table}->ensureIndex($index, $opts);
 			}
 		}
-	}	
+	}
 
 	/**
-	 * Model constructor
-	 * @param array $properties Properties to be applied
+	 * -----------------------------------------------------------------
+	 * Magic Methods
+	 * -----------------------------------------------------------------
 	 */
-	final public function __construct(array $properties = [])
-	{
-		foreach ($properties as $key => $value) {
-			$this->variables[$key] = $value;
-		}
-	}
 
 	/**
 	 * Returns a model property or linked object
@@ -266,22 +274,67 @@ abstract class Model
 	}
 
 	/**
+	 * -----------------------------------------------------------------
+	 * Helper Methods
+	 * -----------------------------------------------------------------
+	 */
+
+	/**
+	 * Returns the model's ID
+	 * @return string
+	 */
+	final public function id()
+	{
+		return $this->variables['_id'];
+	}
+
+	/**
 	 * Returns true of variable is NOT protected
 	 * @param  string  $name
 	 * @return boolean
 	 */
-	private function isPublic($name)
+	final private function isPublic($name)
 	{
 		if (in_array($name, static::$protected)) {
-			throw new \LogicException("Variable {$name} is protected.");
+			return false;
 		} else {
 			return true;
 		}	
 	}
 
 	/**
-	 * Method Filter Defaults
-	 * @return array
+	 * Workaround for when object has already been fetched.
+	 * @return \Common\ActiveRecord\Model
+	 */
+	final public function fetch()
+	{
+		return $this;
+	}
+
+
+	/**
+	 * -----------------------------------------------------------------
+	 * Serialisation
+	 * -----------------------------------------------------------------
+	 */
+	
+	public function jsonSerialize()
+	{
+		$array = [];
+
+		foreach ($this->variables as $name => $value) {
+			if ($this->isPublic($name)) {
+				$array[$name] = $value;
+			}
+		}
+
+		return $array;
+	}
+
+	/**
+	 * -----------------------------------------------------------------
+	 * Default Filter Methods
+	 * -----------------------------------------------------------------
 	 */
 	public static function getFilters() 	{ return []; }
 	public static function postFilters() 	{ return []; }

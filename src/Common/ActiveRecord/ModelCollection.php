@@ -8,7 +8,8 @@ namespace Common\ActiveRecord;
  * @author James Pegg <jamescpegg@gmail.com>
  */
 class ModelCollection
-	extends \Common\Collection
+	extends \ArrayIterator
+	implements \JsonSerializable	
 {
 	/**
 	 * Set property on all models
@@ -88,4 +89,15 @@ class ModelCollection
 			unset($this[$key]);
 		}
 	}
+
+	public function jsonSerialize()
+	{
+		$array = [];
+
+		foreach ($this as $model) {
+			$array[] = $model->jsonSerialize();
+		}
+
+		return $array;
+	}	
 }
