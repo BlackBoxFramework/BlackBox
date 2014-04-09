@@ -15,20 +15,20 @@ class Redirect
 	 * Permanent redirect
 	 * @param  string $url
 	 */
-	public static function permanent($url)
+	public static function permanent($url, $flags = NULL)
 	{
 		http_response_code(301);
-		self::location($url);
+		self::location($url, $flags);
 	}
 
 	/**
 	 * Temporary redirect
 	 * @param  string $url
 	 */
-	public static function temporary($url)
+	public static function temporary($url, $flags = NULL)
 	{
 		http_response_code(302);
-		self::location($url);
+		self::location($url, $flags);
 	}
 
 	/**
@@ -69,9 +69,9 @@ class Redirect
 	 * @param  string $url
 	 * @throws InvalidArgumentException If arguments are invalid
 	 */
-	private static function location($url)
+	private static function location($url, $flags)
 	{
-		if (is_string($url)) {
+		if (is_string($url) && filter_var($url, FILTER_VALIDATE_URL, $flags)) {
 			header("Location: {$url}");
 			die();			
 		} else {
