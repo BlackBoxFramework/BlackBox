@@ -20,6 +20,7 @@ use \Exception;
 use Common\Autoloader;
 use Common\ServiceDispatcher;
 use Common\ObjectContainer;
+use Common\Input;
 
 // Services
 use ApiServices\ApiController;
@@ -103,6 +104,7 @@ if ($config->debug) {
 
 // Load singletons
 $objectContainer = ObjectContainer::getInstance();
+$input = Input::getInstance();
 
 // Load MongoDB
 if (extension_loaded('mongo')) {
