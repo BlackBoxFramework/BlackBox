@@ -124,6 +124,13 @@ abstract class Model
 		// Trigger Event
 		self::trigger('save', [$this]);
 
+		// Set admin variables
+		$this->updated = new \MongoDate(time());
+
+		if (!$this->hasId()) {
+			$this->created = new \MongoDate(time());
+		}
+
 		if (!is_null(static::$table) &&
 			empty(array_diff_key(array_flip(static::$required), $this->variables))) {
 			$database->{static::$table}->save($this->variables);
@@ -286,6 +293,35 @@ abstract class Model
 	final public function id()
 	{
 		return $this->variables['_id'];
+	}
+
+	/**
+	 * Returns true if ID is set
+	 * @return boolean
+	 */
+	final public function hasId()
+	{
+		return isset($this->variables['_id']);
+	}
+
+	/**
+	 * Returns model updated time as a 
+	 * DateTime object
+	 * @return DateTime
+	 */
+	final public function updated()
+	{
+		return new \DateTime("@{$this->updated->sec}");
+	}
+
+	/**
+	 * Returns model created time as a 
+	 * DateTime object
+	 * @return DateTime
+	 */
+	final public function created()
+	{
+		return new \DateTime("@{$this->created->sec}");
 	}
 
 	/**
