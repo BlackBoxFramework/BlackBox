@@ -58,13 +58,17 @@ class ModelCursor
 
 		$models = new ModelCollection();
 
-		foreach ($this->cursor as $data) {
-			if (!is_null($data)) {
-				$models[] = new $model($data);
-			}			
-		}
+		if ($this->cursor->count() > 0) {
+			foreach ($this->cursor as $data) {
+				if (!is_null($data)) {
+					$models[] = new $model($data);
+				}			
+			}
 
-		return $models;			
+			return $models;				
+		} else {
+			throw new \Exception("Document not found", 1);
+		}
 	}
 
 	/**
