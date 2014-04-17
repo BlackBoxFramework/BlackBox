@@ -1,6 +1,6 @@
 <?php
 
-namespace WebServices;
+namespace Common;
 
 /**
  * The redirect class handles permanent (301) and temporary (302)
@@ -15,7 +15,7 @@ class Redirect
 	 * Permanent redirect
 	 * @param  string $url
 	 */
-	public static function permanent($url, $flags = NULL)
+	public static function permanent($url, $filter = true, $flags = 0)
 	{
 		http_response_code(301);
 		self::location($url, $flags);
@@ -25,10 +25,10 @@ class Redirect
 	 * Temporary redirect
 	 * @param  string $url
 	 */
-	public static function temporary($url, $flags = NULL)
+	public static function temporary($url, $filter = true, $flags = 0)
 	{
 		http_response_code(302);
-		self::location($url, $flags);
+		self::location($url, $filter, $flags);
 	}
 
 	/**
@@ -69,9 +69,9 @@ class Redirect
 	 * @param  string $url
 	 * @throws InvalidArgumentException If arguments are invalid
 	 */
-	private static function location($url, $flags)
+	private static function location($url, $filter, $flags)
 	{
-		if (is_string($url) && filter_var($url, FILTER_VALIDATE_URL, $flags)) {
+		if (is_string($url) && ($filter && filter_var($url, FILTER_VALIDATE_URL, $flags) || !$filter ) ) {
 			header("Location: {$url}");
 			die();			
 		} else {
