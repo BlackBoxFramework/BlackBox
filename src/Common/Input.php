@@ -24,7 +24,11 @@ class Input
 	 */
 	private function construct()
 	{
+		// Parse any inputs (POST / PUT)
 		parse_str(file_get_contents('php://input'), self::$input);
+
+		// Append GET data
+		self::$input += $_GET;
 	}
 
 	/**

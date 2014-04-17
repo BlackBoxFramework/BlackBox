@@ -44,7 +44,13 @@ abstract class Model
 	 * Set variables
 	 * @var array
 	 */
-	protected 		 $variables = [];	
+	protected 		 $variables = [];
+
+	/**
+	 * Whether event hooks have been registered
+	 * @var boolean
+	 */
+	protected static $hooked 	= false;
 
 	/**
 	 * Model constructor
@@ -80,6 +86,14 @@ abstract class Model
 	 */
 	final public static function find(array $constraints = []) 
 	{
+
+		// Register hooks
+		if (!self::$hooked) {
+			static::hooks();
+			self::$hooked = true;
+		}
+		
+
 		// Variables
 		$database = self::connection();
 
@@ -376,4 +390,6 @@ abstract class Model
 	public static function postFilters() 	{ return []; }
 	public static function deleteFilters() 	{ return []; }
 	public static function putFilters() 	{ return []; }
+
+	protected function hooks() {}
 }
