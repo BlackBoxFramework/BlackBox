@@ -1,7 +1,7 @@
 <?php
 
 abstract class Input
-	Extends \WebServices\Input
+	Extends \Common\Input
 {
 
 }
