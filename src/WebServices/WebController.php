@@ -6,8 +6,8 @@ use Common\Exceptions\BlackBoxException;
 use Common\FilterStack;
 use Common\Router;
 use Common\ObjectContainer;
+use Common\Redirect;
 use WebServices\Assets;
-use WebServices\Redirect;
 use WebServices\Route;
 use WebServices\View;
 use WebServices\Exceptions\HaltException;
@@ -193,13 +193,17 @@ class WebController
 					throw new BlackBoxException(BlackBoxException::MODEL_IMPLEMENTATION, ['class' => $model]);
 				}
 
+				if (!$class::auth('web')) {
+					throw new BlackBoxException(BlackBoxException::SERVICE_AUTH, ['class' => $model]);
+				}				
+
 				$object = $class::find($variables);
 
 				foreach ($modifiers as $modifier) {
 					$object = $object->$modifier();
 				}
 
-				$models[strtolower(ucfirst($model))] = $object;
+				$models[strtolower(ucfirst($model))] = $object->fetch();
 
 				// Model Filters
 				$filterMethod = strtolower(METHOD) . 'Filters';

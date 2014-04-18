@@ -18,6 +18,10 @@ trait Singleton{
 		if (is_null(self::$instance)) {
 			$class = __CLASS__;
 			self::$instance = new $class;
+
+			if (method_exists(self::$instance, 'construct')) {
+				call_user_func_array([self::$instance, 'construct'], func_get_args());
+			}
 		}
 
 		return self::$instance;

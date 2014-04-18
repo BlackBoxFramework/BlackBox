@@ -14,6 +14,7 @@ class BlackBoxException
 {
 	const FILTER_IMPLEMENTATION = 'There was a problem implementing the following class ; {class}. Please read the documentation carefully.';
 	const MODEL_IMPLEMENTATION = 'There was a problem implementing the following class ; {class}. Please read the documentation carefully.';
+	const SERVICE_AUTH = 'This service is not authorised to access this model.';
 
 	public function __construct($message, array $context = [], Exception $previous = NULL)
 	{

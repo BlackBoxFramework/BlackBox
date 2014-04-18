@@ -1,7 +1,7 @@
 <?php
 
 abstract class Redirect
-	Extends \WebServices\Redirect
+	Extends \Common\Redirect
 {
 
 }

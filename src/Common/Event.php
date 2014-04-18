@@ -37,9 +37,6 @@ class Event
 	 */
 	final protected static function trigger($event, array $args = [])
 	{
-
-		$event = strtolower(str_replace('\\', '.', get_called_class())) . '.' . $event;
-
 		if (isset(self::$events[$event])) {
 			foreach (self::$events[$event] as $callback) {
 				call_user_func_array($callback, $args);
