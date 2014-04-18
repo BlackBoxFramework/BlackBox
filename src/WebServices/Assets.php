@@ -59,7 +59,7 @@ class Assets
 				$asset = fopen($location, 'w+');
 
 				foreach ($assets as $file) {
-					if (is_readable(PROJECT_DIR . $file)) {
+					if (is_readable(PROJECT_DIR . $file) && pathinfo($file, PATHINFO_EXTENSION) == $extension) {
 						fwrite($asset, file_get_contents(PROJECT_DIR . $file));
 					}
 				}
