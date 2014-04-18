@@ -129,9 +129,8 @@ if (PHP_SAPI == 'cli') {
     $service = new CommandController($routes, $config);
 
 } elseif(isset($config->api) &&
-         isset($config->api_url) &&
          $config->api == true && 
-         $config->api_url == $_SERVER['HTTP_HOST']) {
+         substr(REQUEST_URI, 1, 3) == 'api') {
 
     $service = new ApiController($routes, $config);
 
