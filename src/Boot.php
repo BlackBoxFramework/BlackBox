@@ -12,7 +12,7 @@
  * @copyright   Copyright 2013 James Pegg Designs
  * @link        https://github.com/BlackBoxFramework/BlackBox
  * @license     https://github.com/BlackBoxFramework/BlackBox/blob/master/LICENSE
- * @version     0.2
+ * @version     0.3
  * @author      James Pegg <jamescpegg@gmail.com>
  */
 
