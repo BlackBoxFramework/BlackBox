@@ -193,6 +193,10 @@ class WebController
 					throw new BlackBoxException(BlackBoxException::MODEL_IMPLEMENTATION, ['class' => $model]);
 				}
 
+				if (!$class::auth('web')) {
+					throw new BlackBoxException(BlackBoxException::SERVICE_AUTH, ['class' => $model]);
+				}				
+
 				$object = $class::find($variables);
 
 				foreach ($modifiers as $modifier) {
