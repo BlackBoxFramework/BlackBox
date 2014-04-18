@@ -53,11 +53,19 @@ abstract class Model
 	protected static $hooked 	= false;
 
 	/**
+	 * Default authenticated services
+	 * @var array
+	 */
+	protected static $services  = ['web'];
+
+	/**
 	 * Model constructor
 	 * @param array $properties Properties to be applied
 	 */
 	final public function __construct(array $properties = [])
 	{
+		self::trigger('create', [$properties]);
+
 		foreach ($properties as $key => $value) {
 			$this->variables[$key] = $value;
 		}
@@ -98,7 +106,7 @@ abstract class Model
 		$database = self::connection();
 
 		// Trigger Event
-		self::trigger('find', $constraints);		
+		self::trigger('find', [$constraints]);		
 
 		foreach ($constraints as $key => $constraint) {
 			if (in_array($key, static::$protected)) {
@@ -361,6 +369,24 @@ abstract class Model
 		return $this;
 	}
 
+	/**
+	 * Authenticate service access
+	 * @param  string $service
+	 * @return boolean
+	 */
+	final public static function auth($service)
+	{
+		return in_array($service, static::$services);
+	}
+
+	/**
+	 * Empty default hooks method. This is automatically called
+	 * when the "find" method is used. Allows for models to
+	 * hook into their own events.
+	 * @return null
+	 */
+	protected static function hooks() {}
+
 
 	/**
 	 * -----------------------------------------------------------------
@@ -390,6 +416,4 @@ abstract class Model
 	public static function postFilters() 	{ return []; }
 	public static function deleteFilters() 	{ return []; }
 	public static function putFilters() 	{ return []; }
-
-	protected function hooks() {}
 }
