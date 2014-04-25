@@ -75,6 +75,10 @@ Autoloader::register([__DIR__,
 if (is_readable(PROJECT_DIR . '/config.json')) {
     $config = json_get_contents(PROJECT_DIR . '/config.json', true);
 
+    if (!isset($config->{DOMAIN})) {
+        throw new Exception('Domain specific configuration could not be found', 1);
+    }
+
     // Merge settings into one object
     $config = (object) array_merge((array) $config->default, (array) $config->{DOMAIN});
 } else {
