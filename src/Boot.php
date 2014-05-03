@@ -111,7 +111,7 @@ $objectContainer = ObjectContainer::getInstance();
 $input = Input::getInstance();
 
 // Load MongoDB
-if (extension_loaded('mongo')) {
+if (isset($config->mongo_db) && extension_loaded('mongo')) {
 
     // Establish Connection
     $MongoClient = new MongoClient();
