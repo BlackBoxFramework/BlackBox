@@ -37,3 +37,4 @@ foreach ($iterator as $file) {
 
 // Set Boot.php as our main point of entry.
 $phar->setStub($phar->createDefaultStub('Boot.php'));
+$phar->setMetaData(['bootstrap' => 'Boot.php']);
