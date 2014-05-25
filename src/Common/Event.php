@@ -23,6 +23,10 @@ class Event
 	 */
 	final public static function hook($event, \Closure $callback)
 	{
+		if (get_called_class() != 'Event') {
+			$event = strtolower(str_replace('\\', '.', get_called_class())) . '.' . $event;
+		}
+
 		if (is_string($event)) {
 			self::$events[$event][] = $callback;
 		} else {
@@ -35,12 +39,22 @@ class Event
 	 * @param  string $event
 	 * @param  array $args
 	 */
-	final protected static function trigger($event, array $args = [])
+	final protected static function trigger($event, &...$args)
 	{
+		$event = strtolower(str_replace('\\', '.', get_called_class())) . '.' . $event;
+
 		if (isset(self::$events[$event])) {
 			foreach (self::$events[$event] as $callback) {
 				call_user_func_array($callback, $args);
 			}
 		}
-	}		
+
+		foreach (self::$events as $pattern => $callbacks) {
+			if (fnmatch($pattern, $event)) {
+				foreach ($callbacks as $callback) {
+					call_user_func_array($callback, $args);
+				}
+			}
+		}
+	}	
 }

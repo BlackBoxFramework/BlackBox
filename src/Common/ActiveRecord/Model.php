@@ -5,6 +5,7 @@ namespace Common\ActiveRecord;
 use Common\ObjectContainer;
 use Common\ActiveRecord\ModelCollection;
 use Common\ActiveRecord\ModelCursor;
+use Common\ActiveRecord\ModelConstraint;
 use Common\Event;
 
 /**
@@ -64,7 +65,7 @@ abstract class Model
 	 */
 	final public function __construct(array $properties = [])
 	{
-		self::trigger('create', [$properties]);
+		self::trigger('create', $properties);
 
 		foreach ($properties as $key => $value) {
 			$this->variables[$key] = $value;
@@ -101,12 +102,11 @@ abstract class Model
 			self::$hooked = true;
 		}
 		
-
 		// Variables
 		$database = self::connection();
 
 		// Trigger Event
-		self::trigger('find', [$constraints]);		
+		self::trigger('find', $constraints);
 
 		foreach ($constraints as $key => $constraint) {
 			if (in_array($key, static::$protected)) {
@@ -144,7 +144,7 @@ abstract class Model
 		$database = self::connection();
 
 		// Trigger Event
-		self::trigger('save', [$this]);
+		self::trigger('save', $this);
 
 		// Set admin variables
 		$this->updated = new \MongoDate(time());
@@ -171,7 +171,7 @@ abstract class Model
 		$database = self::connection();
 
 		// Trigger Event
-		self::trigger('delete', [$this]);		
+		self::trigger('delete', $this);		
 
 		if (!is_null(static::$table) && isset($this->_id)) {
 			$database->{static::$table}->remove(['_id' => $this->id()]);
