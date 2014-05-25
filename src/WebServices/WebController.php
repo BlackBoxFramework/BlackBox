@@ -63,8 +63,8 @@ class WebController
 		if (!$this->redirects(REQUEST_URI)) {
 
 			$route 		= $this->resolveRequest(REQUEST_URI);
-			$models 	= $this->loadModels($route);
 			$filters 	= $this->loadFilters($route);
+			$models 	= $this->loadModels($route);
 			$view 		= $this->makeView($route, $models, $filters);
 
 			$this->assets($view->compiler);
@@ -203,7 +203,12 @@ class WebController
 					$object = $object->$modifier();
 				}
 
-				$models[strtolower(ucfirst($model))] = $object->fetch();
+				try {
+					$models[strtolower(ucfirst($model))] = $object->fetch();
+				} catch (\Exception $e) {
+					
+				}
+				
 
 				// Model Filters
 				$filterMethod = strtolower(METHOD) . 'Filters';
