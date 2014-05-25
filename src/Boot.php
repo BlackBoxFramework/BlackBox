@@ -119,9 +119,11 @@ if (isset($config->mongo_db) && extension_loaded('mongo')) {
     // Select Database
     $MongoDatabase = $MongoClient->{$config->mongo_db};
 
-    // Authenticate Connection
-    $MongoDatabase->authenticate($config->mongo_user,
-                                 $config->mongo_pwd);
+    if (isset($config->mongo_user) && isset($config->mongo_pwd)) {
+        // Authenticate Connection
+        $MongoDatabase->authenticate($config->mongo_user,
+                                     $config->mongo_pwd);      
+    }    
 
     // Make the database available
     ObjectContainer::setObject('MongoDatabase', $MongoDatabase);
