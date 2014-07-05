@@ -52,6 +52,18 @@ class Input
 	}
 
 	/**
+	 * Removes a variable from the input array
+	 * @param  string $var
+	 * @return void
+	 */
+	public static function delete($var)
+	{
+		if (self::has($var)) {
+			unset(self::$input[$var]);
+		}
+	}
+
+	/**
 	 * Returns all of the input data
 	 * @return array
 	 */
