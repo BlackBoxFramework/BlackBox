@@ -86,7 +86,8 @@ class Cache
 	public function setContent($content)
 	{
 		// Unset old cached files
-		array_walk(glob(CACHE_DIR . DIRECTORY_SEPARATOR . $this->identifier . '*'), function($file) {
+		$dir = glob(CACHE_DIR . DIRECTORY_SEPARATOR . $this->identifier . '*');
+		array_walk($dir, function($file) {
 			unlink($file);
 		});
 

@@ -92,11 +92,11 @@ class ApiController
 
 		if (Input::has('sort')) {
 			$this->sort = Input::get('sort');
-			print_r($this->sort);
 		}
 
 		if (Input::has('redirect')) {
 			$this->redirect = Input::get('redirect');
+			Input::delete('redirect');
 		}		
 
 	}

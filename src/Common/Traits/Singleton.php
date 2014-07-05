@@ -13,7 +13,7 @@ trait Singleton{
 
 	final private function __construct(){}
 
-	final public function getInstance()
+	final public static function getInstance()
 	{
 		if (is_null(self::$instance)) {
 			$class = __CLASS__;
