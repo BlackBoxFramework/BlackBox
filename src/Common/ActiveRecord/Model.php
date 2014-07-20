@@ -227,11 +227,11 @@ abstract class Model
 
 		if (is_string($name) && isset($this->variables[$name])) {
 
-			$model = ucfirst($name) . 'Model';
+			$model = 'Model\\' . ucfirst($name);
 
 			// Fetch a reference / relationships
 			if ($this->variables[$name] instanceof \MongoId) {
-				return $model::find(['_id' => $this->variables[$name]]);
+				return $model::find(['_id' => $this->variables[$name]])->first();
 			} elseif (is_array($this->variables[$name]) && array_search_object($this->variables[$name], '\MongoId')) {
 				return $model::find(['_id' => ['$in' => $this->variables[$name]]]);
 			}
