@@ -48,7 +48,7 @@ class Input
 	 */
 	public static function has($var)
 	{
-		return isset(self::$input[$var]);
+		return isset(self::$input[$var]) && !(is_bool(self::$input[$var]) || is_array(self::$input[$var])) && (string) trim(self::$input[$var]) !== '';
 	}
 
 	/**
