@@ -39,7 +39,7 @@ class Event
 	 * @param  string $event
 	 * @param  array $args
 	 */
-	final protected static function trigger($event, &...$args)
+	final protected static function trigger($event, array $args = [])
 	{
 		$event = strtolower(str_replace('\\', '.', get_called_class())) . '.' . $event;
 
