@@ -95,7 +95,7 @@ class View
 		$template = template_file($this->template);
 
 		// Trigger Event
-		self::trigger('show', $this->template);		
+		self::trigger('show', [$this->template]);		
 
 		if (is_readable($template)) {
 
