@@ -17,7 +17,7 @@ class Autoloader
 	 */
 	public static function register(array $include_paths)
 	{
-		set_include_path(get_include_path() . ';' . implode($include_paths, ';'));
+		set_include_path(get_include_path() . PATH_SEPARATOR . implode($include_paths, PATH_SEPARATOR));
 		spl_autoload_extensions('.php');
 		spl_autoload_register([__NAMESPACE__ . '\Autoloader', 'loader']);
 
