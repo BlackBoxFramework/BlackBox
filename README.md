@@ -1,104 +1,269 @@
-# BlackBox
+# BlackBox PHP Framework
 
-There are lots of great PHP frameworks out at the moment, and they're all making strides towards interoperability. Whilst this is great for developers who have the expertise to pick and choose what they want in their framework, there is a growing need for a simpler solution.
+BlackBox is a single-file PHP framework which aims to be :
 
-Existing frameworks are very powerful, but they can also be overpowered, bloated and too complicated to understand. Often they work on the 'white box' principle, where the developer can see how everything works. But its getting to the point where developers are required to know every nut and bolt in their framework of choice in order to use it efficiently. This has the unfortunate side effect of raising the entry bar for new developers, which puts our industry at risk of stagnation.
+- Fast, scalable and portable.
+- Easy to install, update and distribute.
+- Simple to use for novices.
+- Powerful and flexible enough for experts.
 
-As a result, we're developing the BlackBox Framework on the principle that a developer doesn't need to know how a framework works, they just need to know how to use it.
+## Getting Started
 
-Our aim is to create a fully featured PHP framework which is:
+BlackBox is distributed in a single PHP Archive (PHAR) file. The framework is still in its infancy, so it's not advisable to use it in commercial projects. 
 
-- Fast, scalable and portable
-- Easy to install and update
-- Simple to use for novices
-- Powerful enough for experts
-- And inspires a new generation of web developers
-
-## Download
-BlackBox comes as a single PHP Archive (PHAR) file. The framework is still in its infancy, so we would strongly advise against using it for a real project. If you want to play around with it, you can [download the framework here](https://github.com/BlackBoxFramework/BlackBox/raw/master/blackbox.phar).
-
-In order for BlackBox to run, you must use the following folder structure
-
-	Root Directory
-	|
-	|-- Filter
-	|
-	|-- Model
-	|
-	|-- Public
-	|   \_index.php
-	|
-	|-- Template
-	|
-	\_ blackbox.phar
-	\_ config.json
-	\_ routes.json
-
-Your web server should load the index.php file in the `Public` directory. This should in turn have the following line of code:
-
-	<?php require '../blackbox.phar';?>
-
-## Methodology
-
-BlackBox doesn't completely follow the traditional MVC framework, but it should be familiar to most. There are five basic components to an application that runs on BlackBox:
+To get started, download the [latest release](https://github.com/BlackBoxFramework/BlackBox/releases). The .zip file will contain all the files and folders that you need to get going.
 
 ### Configuration
-Configuring a framework can sometimes be quite a complex task, especially if there are lots of different components to customize. In BlackBox there is a single JSON config file which defines how BlackBox behaves. Full documentation will be written to explain what each option does.
 
-### Routes
-Like any other framework, BlackBox relies on predefined routes in order to figure out what to do. It can be quite tedious for a developer to write out a big list of routes in PHP, so in BlackBox we've opted for a single JSON file. Main features include:
+All the configuration in BlackBox is done in the `config.json` file. The release version will have a very basic configuration file, but there are more parameters you can use :
 
-- Nesting
-- Parametric routes
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Default</th>
+			<th>Description</th>
+		</tr>
+	</thead>
 
-Typically each route should define a `template`, and any applicable `models` and `filters`. Nesting is achieved by storing a route within the `children` node.
+	<tbody>
+		<tr>
+			<td>debug</td>
+			<td>true</td>
+			<td>Defines whether BlackBox shows errors or not. Setting to `true` will show errors.</td>
+		</tr>
+		<tr>
+			<td>cache</td>
+			<td>true</td>
+			<td>Defines whether BlackBox caches compiled templates. Currently always set to `true`</td>
+		</tr>
+		<tr>
+			<td>api</td>
+			<td>true</td>
+			<td>Defines whether the BlackBox built in API is accessible.</td>
+		</tr>
+		<tr>
+			<td>api_filters</td>
+			<td>none</td>
+			<td>An array of filters which should be run when the API is accessed. E.g. `['oauth']`.</td>
+		</tr>
+		<tr>
+			<td>assets</td>
+			<td>none</td>
+			<td>An array of static assets which should be compiled. BlackBox will concatenate files with the same extension into `/Public/assets`. Use `{asset(ext)}` in your template to generate a URL for the asset.</td>
+		</tr>
+		<tr>
+			<td>mongo_db</td>
+			<td>none</td>
+			<td>Defines which MongoDB database to use.</td>
+		</tr>
+		<tr>
+			<td>mongo_user</td>
+			<td>none</td>
+			<td>Defines which MongoDB user to use.</td>
+		</tr>
+		<tr>
+			<td>mongo_pwd</td>
+			<td>none</td>
+			<td>Sets the password for the MongoDB user. (Not required if MongoDB isn't using security).</td>
+		</tr>
+	</tbody>
+</table>
 
-#### Example
+Your configuration file should have a `default` setting and also domain specific settings. Domains will inherit the default settings and then override them with domain specific parameters if they're defined.
 
-	{
-		"/" :
-		{
-			"template"	: "home"
-		},
+### Routing
 
-		"/blog" : 
-		{
-			"template" 	: "blog.list",
-			"models"	: ["blog", "user"],
+All routes are defined in the `routes.json` file. Like the configuration file, a very basic version is included in the release. Routes can take the following parameters :
 
-			"children" : {
-				"/#year" :
-				{
-					"template" 	: "blog.post",
-					"models"	: ["blog(year)"]
+<table>
+	<thead>
+		<tr>
+			<th>Parameter</th>
+			<th>Description</th>
+		</tr>
+	</thead>
 
-					"children"	: {
-						"/:title" : {
-							"template" 	: "blog.post",
-							"models"	: ["blog(title)"]
-						}
-					}
-				}
-			}
-		}
-	}
+	<tbody>
+		<tr>
+			<td>template</td>
+			<td>This sets which template should be used. If your templates are organised into folders, use a `.` to denote a child template. E.g. `blog.item`.</td>
+		</tr>
+		<tr>
+			<td>methods</td>
+			<td>An array of accepted HTTP methods. E.g. `["GET", "POST"]`. If undefined, defaults to a `GET` request.</td>
+		</tr>
+		<tr>
+			<td>filters</td>
+			<td>An array of filters to be executed before the page is shown.</td>
+		</tr>
+		<tr>
+			<td>models</td>
+			<td>An array of models to be fetched before the page is shown. Dynamic route parameters can be passed to the model like this : `blog(slug)` and methods can be accessed like this `blog.first`.</td>
+		</tr>
+		<tr>
+			<td>children</td>
+			<td>A nested route definition.</td>
+		</tr>
+	</tbody>
+</table>
 
-### Filters
-Filters are classes which are run before the request is fully completed. A good example of a filter would be something like a user authentication filter. Every filter must extend the base framework filter class.
+Nested routes can be used using the `children` parameter. The child route will build on top of the parent route, so there is no need to define the whole route.
 
-*This isn't fully implemented yet, so watch this space!*
+### Dynamic / Parametric Routing
+
+BlackBox supports both static and dynamic routes. An alphanumeric route part us defined with a colon (`:`), and a numeric route part is defined using a hash (`#`). For example, to define a blog route you might use :
+
+`/blog/#year/#month/:title`
+
+### Redirects
+
+Similar to the configuration file and the routes file, all redirects are done via `redirect.json`. The release file has a basic example of a redirect from `/foo` to `/bar`.
+
+### Templating
+
+BlackBox comes with a fully fledged templating engine. The file extension for a template is `.tpl`, and all your templates should be saved in the `Template` folder. You can also download syntax highlighting for Sublime Text [here](https://github.com/BlackBoxFramework/BlackBoxSublimeText).
+
+#### Variables
+Printing a variable is simply done by using two curly brackets, e.g. `{{$variable}}` . BlackBox automatically escapes HTML special characters using `htmlspecialchars()`.
+
+You can also define a variable in your template like this : `{define($variable, 'Variable string')}`.
+
+#### If statements
+If statements in BlackBox templating work in the same way as in PHP :
+
+```
+{if($variable > 5)}
+
+	# Your code for true
+
+{else}
+
+	# Your code for false
+
+{/if}
+```
+
+#### Loops
+BlackBox also supports `foreach`, `while` and `for` loops :
+
+```
+{foreach($array as $value)}
+
+	# Your code
+
+{/foreach}
+```
+
+```
+{while($variable < 5)}
+
+	# Your code
+
+{/while}
+```
+
+```
+{for($i=0; $i < 10; $i++)}
+
+	# Your code
+
+{/for}
+```
+
+Foreach loops are automatically wrapped in an if statement, which means you can have a default action if the array is empty :
+
+```
+{foreach($array as $value)}
+
+	# Your code
+
+{else}
+
+	# Show this if array is empty
+
+{/foreach}
+```
+
+#### Switch Statements
+Switch statements can also be used in BlackBox :
+
+```
+{switch($variable)}
+
+	{case(true)}
+	
+		# Your code for true
+	
+	{/case}
+
+	{default}
+
+		# Your code for detaul
+
+	{/default}
+
+{/switch}
+```
+
+#### Template Inheritance
+
+Like other popular templating engines, BlackBox also supports template inheritance. To extend an existing template, use the `extend` keyword :
+
+`{extend(master)}`
+
+The master template can specify where to show specific inherited sections, by using the `yield` keyword :
+
+`{yield(header)}`
+
+The child template uses the `section` keyword to define an output for a particular yield section :
+
+```
+{section(header)}
+
+	# Your header code
+
+{/section}
+```
+
+You can also include a specific template by using the `include` keyword :
+
+`{include(breadcrumbs)}`
+
+Each child template should only extend one master template, however they can provide multiple sections / yields.
 
 ### Models
-Models represent the data stored in your database. MVC frameworks normally use relational databases, but we'll be using non-relational databases instead. They're still new, but they're quicker to develop with and are easier to scale. Every model must extend the base framework model class.
+MongoDB is the default database used by BlackBox. To create a model, extend the `Model` class and fill in the `$table` variable. A simple blog model might look like this :
 
-*This isn't fully implemented yet, so watch this space!*
+```
+namespace Model;
 
-### Templates
-Templates should be at the core of the development experience. The plan is to build a fully fledged templating engine which simplifies the whole process of creating a website.
+class Blog
+	Extends \Model
+{
+	protected static $table = 'blog';
+}
 
-*This isn't fully implemented yet, so watch this space!*
+```
 
-## The future of BlackBox
-BlackBox has only just reached the proof of concept stage, so we're far from achieving our aims. In addition to the 'Web Service', we have plans to create a 'Api Service' which will seamlessly fit in with JavaScript frameworks and a 'CLI Service' for managing your application.
+### Filters
+Filters are classes which are run before a request is completed. Typically they would hook into framework or model events to modify input or outputs. Similar to models, a filter just needs to extend the `Filter` class :
 
-If you have any questions or feature requests, please feel free to raise an issue or get stuck in!
+```
+namespace Filter;
+
+class Auth
+	Extends \Filter
+{
+	public function boot()
+	{
+		# Your authentication code
+	}
+}
+```
+
+# Full Documentation
+Complete documentation on templating, models and filters is being written and will be released soon.
+
+# Contribution & Help
+If you have any problems using BlackBox, please use GitHub's issue tracker. If you would like to contribute to BlackBox, please feel free to create a pull request. We only ask that your code is well commented and documented.
