@@ -97,7 +97,7 @@ class WebController
 		if (is_readable(PROJECT_DIR . '/redirect.json')) {
 			$redirects = json_get_contents(PROJECT_DIR . '/redirect.json', true, true);
 
-			Redirect::fromArray($redirects, $request);
+			Redirect::fromArray($redirects, $request, false);
 		}
 
 		return false;

@@ -37,7 +37,7 @@ class Redirect
 	 * @param  string $request
 	 * @throws Exception If unsupported redirect type is given
 	 */
-	public static function fromArray(array $redirects, $request)
+	public static function fromArray(array $redirects, $request, $filter = true)
 	{
 		if (isset($redirects[$request])) {
 			$redirect = $redirects[$request];
@@ -49,11 +49,11 @@ class Redirect
 
 				switch ($redirect[$url]) {
 					case '302':
-						self::temporary($url);
+						self::temporary($url, $filter);
 						break;
 
 					case '301':
-						self::permanent($url);
+						self::permanent($url, $filter);
 						break;
 
 					default:
