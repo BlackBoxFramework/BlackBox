@@ -85,7 +85,7 @@ if (is_readable(PROJECT_DIR . '/config.json')) {
     throw new Exception('Configuration file either does not exist or is not readable.', 1);
 }
 
-// Loader Routes Filer
+// Load Routes File
 if (is_readable(PROJECT_DIR . '/routes.json')) {
     $routes = json_get_contents(PROJECT_DIR . '/routes.json', true);
 } else {
